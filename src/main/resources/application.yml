@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: welfare-capstone
+  datasource:
+    url: jdbc:mysql://localhost:3306/welfare_capstone?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+
+welfare:
+  api:
+    service-key: ${WELFARE_API_SERVICE_KEY:}
+    base-url: https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations
+
+llm:
+  api:
+    key: ${LLM_API_KEY:}
+    base-url: ${LLM_API_BASE_URL:}
