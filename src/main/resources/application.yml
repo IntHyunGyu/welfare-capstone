@@ -21,6 +21,11 @@ welfare:
   api:
     service-key: ${WELFARE_API_SERVICE_KEY:}
     base-url: https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations
+    # 목록조회 1회 호출당 건수. 값을 올리면 전체 수집에 필요한 호출 횟수가 줄어든다.
+    page-size: 100
+    # 배치 1회 실행에서 허용할 최대 페이지(=최대 API 호출) 수.
+    # 개발계정 일 1,000회 제한을 고려한 안전장치 - 전체 데이터가 이보다 많으면 여러 날에 나눠 수동 실행한다.
+    max-pages: 50
 
 llm:
   api:
