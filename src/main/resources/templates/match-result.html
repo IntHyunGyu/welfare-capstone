@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오늘의 복지 - 내 혜택 결과</title>
+    <style>
+        body { font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: #f5f6f8; margin: 0; color: #1f2328; }
+        .container { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+        h1 { font-size: 28px; margin-bottom: 4px; }
+        .subtitle { color: #6b7280; margin-top: 0; margin-bottom: 8px; }
+        .back-link { display: inline-block; margin-bottom: 24px; color: #2563eb; text-decoration: none; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { background: #fff; border: 1px solid #e2e4e8; border-radius: 10px; padding: 32px; text-align: center; color: #6b7280; }
+        .card { background: #fff; border: 1px solid #e2e4e8; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; }
+        .card h2 { font-size: 18px; margin: 0 0 8px; }
+        .card .dgst { color: #374151; font-size: 14px; line-height: 1.5; margin: 0 0 12px; }
+        .meta { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+        .meta span { background: #f3f4f6; padding: 4px 10px; border-radius: 999px; }
+        .card a.detail-link { color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .card a.detail-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>오늘의 복지</h1>
+    <p class="subtitle" th:text="${#lists.size(benefits)} + '건의 혜택을 찾았어요'"></p>
+    <a class="back-link" th:href="@{/profile}">← 조건 다시 입력하기</a>
+
+    <div class="empty" th:if="${#lists.isEmpty(benefits)}">
+        조건에 맞는 혜택을 찾지 못했어요. 조건을 조금 넓혀서 다시 시도해보세요.
+    </div>
+
+    <div class="card" th:each="b : ${benefits}">
+        <h2 th:text="${b.servNm}"></h2>
+        <p class="dgst" th:if="${b.servDgst}" th:text="${b.servDgst}"></p>
+        <div class="meta">
+            <span th:if="${b.sprtCycNm}" th:text="'지원주기 · ' + ${b.sprtCycNm}"></span>
+            <span th:if="${b.aplyMtdNm}" th:text="'신청방법 · ' + ${b.aplyMtdNm}"></span>
+            <span th:if="${b.ctpvNm}" th:text="${b.ctpvNm} + (${b.sggNm} != null ? ' ' + ${b.sggNm} : '')"></span>
+        </div>
+        <a class="detail-link" th:if="${b.servDtlLink}" th:href="${b.servDtlLink}" target="_blank" rel="noopener">자세히 보기 →</a>
+    </div>
+</div>
+</body>
+</html>
