@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${benefit.servNm} + ' - 오늘의 복지'">오늘의 복지 - 혜택 상세</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="container wide">
+    <div class="top">
+        <div class="brand">
+            <div class="mark">오</div>
+            <span>오늘의 복지</span>
+        </div>
+        <a class="back-link" th:href="@{/match}">← 목록으로</a>
+    </div>
+
+    <div class="detail-header">
+        <p class="dept" th:if="${benefit.bizChrDeptNm}" th:text="${benefit.bizChrDeptNm}"></p>
+        <h1 th:text="${benefit.servNm}"></h1>
+        <p class="dgst" th:if="${benefit.servDgst}" th:text="${benefit.servDgst}"></p>
+        <div class="meta">
+            <span th:if="${benefit.sprtCycNm}" th:text="'지원주기 · ' + ${benefit.sprtCycNm}"></span>
+            <span th:if="${benefit.srvPvsnNm}" th:text="'제공방식 · ' + ${benefit.srvPvsnNm}"></span>
+            <span th:if="${benefit.ctpvNm}" th:text="${benefit.ctpvNm} + (${benefit.sggNm} != null ? ' ' + ${benefit.sggNm} : '')"></span>
+            <span th:if="${detail.enfcEndYmd == '99991231'}">상시 운영</span>
+            <span th:if="${detail.enfcEndYmd != null and #strings.length(detail.enfcEndYmd) == 8 and detail.enfcEndYmd != '99991231'}"
+                  th:text="'운영기간 · ~' + ${#strings.substring(detail.enfcEndYmd, 0, 4)} + '.' + ${#strings.substring(detail.enfcEndYmd, 4, 6)} + '.' + ${#strings.substring(detail.enfcEndYmd, 6, 8)}"></span>
+        </div>
+    </div>
+
+    <div class="summary-box" th:if="${detail.llmSummary}">
+        <span class="label">쉽게 말하면</span>
+        <p class="text" th:text="${detail.llmSummary}"></p>
+    </div>
+
+    <section class="detail-section" th:if="${detail.sprtTrgtCn}">
+        <h2>누가 받을 수 있나요</h2>
+        <p class="body" th:text="${detail.sprtTrgtCn}"></p>
+    </section>
+
+    <section class="detail-section" th:if="${detail.slctCritCn}">
+        <h2>선정 기준</h2>
+        <p class="body" th:text="${detail.slctCritCn}"></p>
+    </section>
+
+    <section class="detail-section" th:if="${detail.alwServCn}">
+        <h2>무엇을 지원하나요</h2>
+        <p class="body" th:text="${detail.alwServCn}"></p>
+    </section>
+
+    <section class="detail-section" th:if="${detail.aplyMtdCn}">
+        <h2>어떻게 신청하나요</h2>
+        <p class="body" th:text="${detail.aplyMtdCn}"></p>
+    </section>
+
+    <div class="detail-footer" th:if="${benefit.servDtlLink}">
+        <a class="pill-link" th:href="${benefit.servDtlLink}" target="_blank" rel="noopener">복지로에서 원문 보기 →</a>
+    </div>
+</div>
+</body>
+</html>

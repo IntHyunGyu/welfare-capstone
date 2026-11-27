@@ -61,7 +61,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **DB**: MySQL + Spring Data JPA
 - **외부 API 호출**: `RestClient` (Spring Boot 3.2+)
 - **XML 파싱**: `jackson-dataformat-xml`
-- **LLM 연동**: OpenAI/Claude REST API를 `RestClient`로 직접 호출 (별도 SDK 불필요) — 미구현
+- **LLM 연동**: Claude API, 공식 Anthropic Java SDK(`anthropic-java`) 사용 — ✅ 구현됨 (실키 검증 전)
 - **인증**: 없음. 로그인 없이 `HttpSession`으로 프로필 임시 보관. 즐겨찾기는 브라우저 `localStorage`에 `servId`만 저장 (백엔드 부담 최소화)
 - **배포**: Railway / Render / AWS 프리티어 중 택1 — **3~4주차에 미리 배포 파이프라인 확인 필수** (막판 배포 이슈가 캡스톤 최대 리스크) — ⚠️ 아직 미착수, 이 프로젝트에서 가장 리스크 큰 항목
 
@@ -71,7 +71,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 1. ✅ 프로필 입력 폼 (생애주기/가구상황/관심주제 체크박스, 나이, 시도/시군구)
 2. ✅ 복지혜택 매칭 — 프로필을 로컬 캐시 조회 조건으로 변환, 결과 리스트 표시
 3. ✅ 혜택 카드 UI (제목, 요약, 지원주기, 신청방법, 상세링크)
-4. ⬜ LLM 요약 — 상세조회의 `sprtTrgtCn`(지원대상)/`slctCritCn`(선정기준)/`alwServCn`(지원내용) 같은 딱딱한 행정 문구를 쉬운 말로 변환 — **다음 작업 대상**
+4. ✅ LLM 요약 — 상세조회의 `sprtTrgtCn`(지원대상)/`slctCritCn`(선정기준)/`alwServCn`(지원내용) 같은 딱딱한 행정 문구를 쉬운 말로 변환 (실키로 품질 확인 필요)
 
 **P1 (여유 있으면)**
 5. ⬜ "최근 업데이트" 뱃지 (`lastModYmd` 기준)
@@ -205,7 +205,7 @@ public record WelfareItem(
 | 3~4주 | 프로젝트 셋업(Spring Initializr), 엔티티/Repository, **배포 파이프라인 미리 확인** | 프로젝트 셋업/엔티티는 ✅, 배포 파이프라인 확인은 ⬜ (리스크) |
 | 5~7주 | 배치 수집 로직 + 매칭 서비스(Controller/Thymeleaf) | ✅ (목록조회 배치·매칭·화면 전부 실데이터로 검증됨) |
 | 8주 | 중간발표 (프로필 입력 → 혜택 목록 데모) | 데모 가능한 상태 |
-| 9~11주 | LLM 요약 기능 연동 | ⬜ 다음 작업 |
+| 9~11주 | LLM 요약 기능 연동 | ✅ 구현 (실키 검증 남음) |
 | 12~13주 | 최근 업데이트 뱃지, 즐겨찾기(localStorage) | ⬜ |
 | 14주 | 배포 + 통합 테스트 | ⬜ |
 | 15~16주 | 발표 준비 | ⬜ |
@@ -232,8 +232,8 @@ public record WelfareItem(
 
 ## 다음에 할 일
 
-1. 상세조회(`LcgvWelfaredetailed`) 연동: `WelfareApiService`에 상세조회 호출 추가, `WelfareBenefitDetail` 저장 배치/온디맨드 로직 설계
-2. LLM 요약 프롬프트 설계 (`sprtTrgtCn`/`slctCritCn`/`alwServCn` 원문 → 쉬운 말 변환, 결과를 `WelfareBenefitDetail.llmSummary`에 캐싱)
+1. ✅ 상세조회 연동 (2026-11-27): `GET /benefits/{servId}` → `WelfareBenefitDetailService.getOrFetch()`가 DB 캐시 우선, 없으면 `WelfareApiService.fetchDetail()` 온디맨드 호출 후 저장. 화면은 `benefit-detail.html`, 공통 스타일은 `static/css/app.css`. ⚠️ 응답 루트 태그 `wantedDtl`은 **추정값** — 실키로 아직 호출 안 해봄, 처음 실키로 열어볼 때 파싱 결과(필드가 비어있지 않은지) 확인 필요
+2. ✅ LLM 요약 (2026-11-27): `LlmSummaryService`가 **공식 Anthropic Java SDK**(`anthropic-java`, 계획했던 RestClient 직접 호출 대신)로 `claude-opus-5-5`(effort low, 거절 시 서버측 fallback 켬) 호출 → `llmSummary`에 캐싱, 상세 화면 "쉽게 말하면" 박스에 표시. 키는 환경변수 `ANTHROPIC_API_KEY` (`llm.api-key`) — 비어 있으면 요약을 건너뛰고 원문만 보여줌, 호출 실패해도 화면은 원문으로 뜨고 다음 조회 때 재시도. ⚠️ 실제 키로 요약 품질 확인은 아직 안 함 (프롬프트는 `LlmSummaryService.SYSTEM_PROMPT`). 첫 조회 시 요약 생성 때문에 몇 초 걸릴 수 있음
 3. "최근 업데이트" 뱃지 (`lastModYmd` 기준), 즐겨찾기(localStorage) — P1
 4. 배포 파이프라인 확인 (Railway/Render/AWS 프리티어 중 택1) — 리스크 큰 항목이라 우선순위 앞당기는 것도 고려
 
