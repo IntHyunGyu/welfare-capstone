@@ -9,9 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
- * 상세조회와 LLM 요약은 사용자가 상세 화면을 열 때 온디맨드로 만들고 DB에 캐싱한다 -
- * 같은 servId는 API/LLM을 다시 호출하지 않는다.
+ * 상세조회는 상세 화면을 열 때, LLM 요약은 화면이 뜬 뒤 스크립트가 따로 요청할 때 온디맨드로 만들고
+ * DB에 캐싱한다 - 같은 servId는 API/LLM을 다시 호출하지 않는다.
  */
 @Service
 public class WelfareBenefitDetailService {
@@ -31,12 +33,23 @@ public class WelfareBenefitDetailService {
     }
 
     public WelfareBenefitDetail getOrFetch(WelfareBenefit benefit) {
-        WelfareBenefitDetail detail = detailRepository.findById(benefit.getServId())
+        return detailRepository.findById(benefit.getServId())
                 .orElseGet(() -> fetchAndCache(benefit.getServId()));
+    }
+
+    public boolean summaryEnabled() {
+        return summaryService.enabled();
+    }
+
+    /**
+     * 저장된 요약이 있으면 그대로, 없으면 LLM으로 만들어 저장한다. 키가 없거나 실패하면 빈 값.
+     */
+    public Optional<String> getOrCreateSummary(WelfareBenefit benefit) {
+        WelfareBenefitDetail detail = getOrFetch(benefit);
         if (detail.getLlmSummary() == null && summaryService.enabled()) {
-            return summarizeAndCache(benefit, detail);
+            detail = summarizeAndCache(benefit, detail);
         }
-        return detail;
+        return Optional.ofNullable(detail.getLlmSummary());
     }
 
     private WelfareBenefitDetail fetchAndCache(String servId) {
