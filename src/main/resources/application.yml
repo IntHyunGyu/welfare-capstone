@@ -35,9 +35,6 @@ welfare:
   admin:
     # 관리자 페이지(/manage)에 들어갈 수 있는 아이디 (콤마 구분). 본인이 먼저 가입한 아이디를 적는다.
     usernames: ${ADMIN_USERNAMES:}
-  security:
-    # "로그인 상태 유지" 쿠키 서명 키. 로컬 기본값이 있고 prod는 REMEMBER_ME_KEY가 필수.
-    remember-me-key: ${REMEMBER_ME_KEY:local-dev-remember-me-key}
 
 llm:
   # 비어 있으면 LLM 요약을 건너뛰고 상세 화면에 원문만 보여준다.

@@ -2,7 +2,11 @@ package com.welfare.today.controller;
 
 import com.welfare.today.dto.BatchSyncResult;
 import com.welfare.today.entity.DailyMetric;
+import com.welfare.today.entity.WelfareBenefit;
+import com.welfare.today.entity.WelfareBenefitDetail;
 import com.welfare.today.repository.DailyMetricRepository;
+import com.welfare.today.repository.WelfareBenefitDetailRepository;
+import com.welfare.today.repository.WelfareBenefitRepository;
 import com.welfare.today.service.MemberService;
 import com.welfare.today.service.WelfareBenefitBatchService;
 import jakarta.persistence.EntityManager;
@@ -56,6 +60,12 @@ class ManageAccessTest {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private WelfareBenefitRepository benefitRepository;
+
+    @Autowired
+    private WelfareBenefitDetailRepository detailRepository;
+
     @MockBean
     private WelfareBenefitBatchService batchService;
 
@@ -99,6 +109,31 @@ class ManageAccessTest {
                 .andExpect(redirectedUrl("/manage"))
                 .andExpect(flash().attribute("batchMessage", "수집 완료: 4,818건 (API 호출 25회)"));
         verify(batchService).syncAll();
+    }
+
+    @Test
+    void summaryResetClearsOneOrAllAndIsAdminOnly() throws Exception {
+        benefitRepository.save(new WelfareBenefit("S1", "혜택1", null, "서울특별시", null, null, null, null, null,
+                null, "20261101", "청년", "저소득", "주거", LocalDateTime.now()));
+        detailRepository.save(new WelfareBenefitDetail("S1", "대상", "기준", "내용", "방법", null, null, "요약1"));
+        detailRepository.save(new WelfareBenefitDetail("S2", "대상", "기준", "내용", "방법", null, null, "요약2"));
+        detailRepository.save(new WelfareBenefitDetail("S3", "대상", "기준", "내용", "방법", null, null, "요약3"));
+
+        mockMvc.perform(post("/manage/summaries/reset").session(logIn("plain_user")).with(csrf()))
+                .andExpect(status().isForbidden());
+
+        MockHttpSession admin = logIn("boss_admin");
+        mockMvc.perform(post("/manage/summaries/reset").session(admin).with(csrf()).param("servId", "S1"))
+                .andExpect(redirectedUrl("/manage"))
+                .andExpect(flash().attribute("summaryMessage", "S1 요약 1건을 지웠어요."));
+        mockMvc.perform(post("/manage/summaries/reset").session(admin).with(csrf()).param("servId", ""))
+                .andExpect(flash().attribute("summaryMessage", "저장된 요약 2건을 모두 지웠어요."));
+        entityManager.clear();
+        assertThat(detailRepository.countByLlmSummaryIsNotNull()).isZero();
+
+        mockMvc.perform(get("/manage").session(admin))
+                .andExpect(content().string(containsString("코드표 라벨 대조")))
+                .andExpect(content().string(containsString("저소득")));
     }
 
     @Test

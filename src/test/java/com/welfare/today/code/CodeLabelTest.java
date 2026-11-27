@@ -10,7 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 매칭은 코드표 enum 라벨로 DB의 콤마구분 문자열을 LIKE 검색하므로, 라벨이 API 표기와 한 글자라도 다르면
- * 그 항목만 조용히 0건이 된다. 아래 기대값은 2026-11-27 배포 DB(실데이터 4,818건)를 GET /admin/labels로 집계한 표기다.
+ * 그 항목만 조용히 0건이 된다. 아래 기대값은 2026-11-27 배포 DB(실데이터 4,818건)에서 집계한 표기다
+ * (지금은 관리자 페이지의 "코드표 라벨 대조"에서 확인).
  */
 class CodeLabelTest {
 

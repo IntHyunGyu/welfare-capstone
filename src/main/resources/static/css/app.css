@@ -91,6 +91,22 @@ table.stats th, table.stats td { padding: 9px 10px; text-align: right; border-bo
 table.stats th:first-child, table.stats td:first-child { text-align: left; }
 table.stats th { font-size: 12px; color: var(--ink-sub); font-weight: 600; }
 table.stats tbody tr:first-child td { font-weight: 700; }
+.panel-hint.lead { margin: 0 0 14px; }
+.inline-action { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.inline-action .field { flex: 1 1 220px; min-width: 0; }
+.secondary-btn {
+    min-height: 44px; padding: 0 18px; border-radius: 12px; border: 1.5px solid var(--accent);
+    background: var(--card); color: var(--accent); font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+    transition: background 0.12s ease;
+}
+.secondary-btn:hover { background: var(--accent-soft); }
+.label-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.label-group { background: var(--surface); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.label-group h3 { font-size: 13px; margin: 0 0 8px; color: var(--ink-sub); }
+.label-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13.5px; }
+.label-group li { display: flex; justify-content: space-between; gap: 8px; }
+.label-group .count { font-variant-numeric: tabular-nums; color: var(--ink-sub); }
+.empty-note { font-size: 13px; color: var(--ink-sub); margin: 0; }
 .auth-switch { text-align: center; font-size: 14px; color: var(--ink-sub); margin-top: 18px; }
 .auth-switch a { color: var(--accent); font-weight: 700; text-decoration: none; }
 .auth-switch a:hover { text-decoration: underline; }

@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 이 문서는 새 Claude Code 세션이 이 캡스톤 프로젝트를 이어서 진행할 수 있도록 지금까지의 논의/결정 사항과 진행 상황을 정리한 기획 문서입니다.
 **2026-09-23 기준 진행 상황**: 프로젝트 스캐폴딩부터 프로필 입력→매칭 화면까지 구현 완료, 실제 서비스키로 배치 실행까지 검증 완료. 자세한 내용은 하단 [진행 상황](#진행-상황-2026-09-23-기준) 섹션 참고.
 
-**2026-11-27 배포 완료**: https://welfare-capstone-production.up.railway.app (Railway + MySQL). 실데이터 배치 적재 성공, 매칭(청년+저소득) 131건, 상세조회 파싱(`wantedDtl` 추측 맞음)과 LLM 요약 실제 동작 확인. 요약이 너무 길어서(한 줄에 여러 문장) 프롬프트를 3~4줄·300자 이내·핵심만으로 줄임 — 프롬프트를 바꾸면 `curl -X POST <주소>/admin/summaries/reset -H "X-Admin-Token: <값>"`(특정 혜택만: `?servId=...`)로 저장된 요약을 지워야 새 프롬프트가 적용된다. 첫 상세 조회가 약 13초 걸리던 문제는, 상세 화면을 LLM 없이 먼저 렌더링하고 `static/js/summary.js`가 `POST /benefits/{servId}/summary`로 요약을 따로 받아 채우는 방식으로 해결 (기다리는 동안 "AI가 쉬운 말로 요약하고 있어요…" 표시, 실패/키 없음이면 박스 숨김). 요약 요청을 POST로 둔 건 브라우저 미리 불러오기나 크롤러가 LLM 비용을 쓰지 않게 하려는 것.
+**2026-11-27 배포 완료**: https://welfare-capstone-production.up.railway.app (Railway + MySQL). 실데이터 배치 적재 성공, 매칭(청년+저소득) 131건, 상세조회 파싱(`wantedDtl` 추측 맞음)과 LLM 요약 실제 동작 확인. 요약이 너무 길어서(한 줄에 여러 문장) 프롬프트를 3~4줄·300자 이내·핵심만으로 줄임 — 프롬프트를 바꾸면 관리자 페이지의 "요약 다시 만들기"(특정 혜택만: 서비스 ID 입력)로 저장된 요약을 지워야 새 프롬프트가 적용된다. 첫 상세 조회가 약 13초 걸리던 문제는, 상세 화면을 LLM 없이 먼저 렌더링하고 `static/js/summary.js`가 `POST /benefits/{servId}/summary`로 요약을 따로 받아 채우는 방식으로 해결 (기다리는 동안 "AI가 쉬운 말로 요약하고 있어요…" 표시, 실패/키 없음이면 박스 숨김). 요약 요청을 POST로 둔 건 브라우저 미리 불러오기나 크롤러가 LLM 비용을 쓰지 않게 하려는 것.
 
 **2026-11-27 추가 결정**: ① 프로필 입력/매칭 결과 화면 UI를 토스 스타일(칩 토글, 카드+그림자)로 리디자인. ② 로컬 개발 머신에 JDK가 8뿐이라 Temurin JDK 17 설치. 다른 프로젝트가 1.8을 쓰므로 기본 `JAVA_HOME`은 1.8로 두고, 이 프로젝트는 `mvn17.cmd`로만 17을 쓴다. ③ **로컬 DB를 H2로 확정** — MySQL 구축/연동은 배포 시점으로 미룸 (위 [DB](#개발-명령어) 항목 참고).
 
@@ -19,13 +19,14 @@ Maven Wrapper(`mvnw`)는 없음. **이 PC의 기본 JDK는 1.8**(다른 프로�
 .\mvn17.cmd spring-boot:run "-Dspring-boot.run.profiles=local"  # 실키가 든 local 프로필로 실행 (http://localhost:8080 → /profile 리다이렉트)
 .\mvn17.cmd test                                            # 전체 테스트
 .\mvn17.cmd test -Dtest=TodayWelfareApplicationTests        # 단일 테스트 클래스 (메서드: -Dtest=Class#method)
-curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배치 수동 실행 → DB 적재 (API quota 약 25회 소모)
 ```
+
+- **데이터 수집/관리**: 관리자 페이지 `/manage`(ADMIN만)에서 한다 — "지금 데이터 수집하기"(목록조회 배치, API 약 25회), "요약 다시 만들기"(저장된 LLM 요약 지우기, 서비스 ID 지정 가능), "코드표 라벨 대조"(DB 라벨별 건수). 로컬에서는 `ADMIN_USERNAMES=<가입한 아이디>`로 실행하면 그 아이디가 관리자. (예전 curl + `X-Admin-Token` 방식의 `/admin/**` 엔드포인트는 2026-11-27에 삭제)
 
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트** (40개, H2라 별도 DB 없이 돈다): `ProfileFlowTest`(조건 다시 입력 시 이전 선택 유지, 조건 없이 제출 차단), `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지/CSRF 규칙), `ManageAccessTest`(관리자 접근 권한/수집 버튼/페이지 조회 집계), `MetricServiceTest`, `AdminDashboardServiceTest`(일별 집계·추정 비용), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
+- **테스트** (37개, H2라 별도 DB 없이 돈다): `ProfileFlowTest`(조건 다시 입력 시 이전 선택 유지, 조건 없이 제출 차단), `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지(DB 토큰 저장·쿠키만으로 로그인·로그아웃 시 삭제)/CSRF 규칙), `ManageAccessTest`(관리자 접근 권한/수집 버튼/요약 지우기/라벨 대조/페이지 조회 집계), `MetricServiceTest`, `AdminDashboardServiceTest`(일별 집계·추정 비용), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `contextLoads`.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
@@ -171,7 +172,7 @@ WelfareBenefitDetail (상세조회 캐시, servId 1:1 FK)  — ⬜ 엔티티/Rep
 **관심주제 (intrsThemaArray)** — ✅ `InterestTheme` enum으로 구현
 010 신체건강, 020 정신건강, 030 생활지원, 040 주거, 050 일자리, 060 문화·여가, 070 안전·위기, 080 임신·출산, 090 보육, 100 교육, 110 입양·위탁, 120 보호·돌봄, 130 서민금융, 140 법률 (2026-11 실데이터에는 정신건강/문화·여가/법률 혜택이 0건 — 단독 선택 시 결과 없음이 정상)
 
-> 실데이터 라벨과 건수는 `GET /admin/labels`(X-Admin-Token 필요)로 확인한다. 코드표 enum 라벨은 `CodeLabelTest`가 실데이터 표기로 고정하고 있으니, 라벨을 바꾸면 이 테스트도 같이 실데이터로 확인해서 고칠 것.
+> 실데이터 라벨과 건수는 관리자 페이지 `/manage`의 "코드표 라벨 대조"에서 확인한다. 코드표 enum 라벨은 `CodeLabelTest`가 실데이터 표기로 고정하고 있으니, 라벨을 바꾸면 이 테스트도 같이 실데이터로 확인해서 고칠 것.
 
 **서비스구분코드 (wlfareInfoDtlCd, 상세조회 부가정보용)**
 010 문의, 020 사이트, 030 근거법령, 040 서식/자료
@@ -231,7 +232,7 @@ public record WelfareItem(
 - 나이(age) 필터는 화면 입력은 받지만 매칭 로직에는 미반영 (서비스별 연령 상한/하한이 로컬에 캐싱되어 있지 않음 — 상세조회 연동 시 재검토)
 - 지역 선택 (2026-11-27): 시도/시군구 선택지를 하드코딩하지 않고 DB에 저장된 이름으로 만든다(`RegionService`, `static/js/region.js`가 시도에 따라 시군구 목록을 바꿈). 하드코딩 목록일 때 실데이터에서 광주광역시·전라남도가 0건이었다(표기가 달라서). 시군구를 고르면 시군구가 비어 있는 시도 전체 대상 사업도 함께 매칭된다
 - `resultCode` 실패 케이스 처리 로직 없음 (정상 케이스만 검증됨)
-- `/admin/**`는 `X-Admin-Token` 헤더 검사 (`AdminTokenInterceptor`, 값은 `welfare.admin.token`). 로컬은 토큰이 비어 있어 검사 없이 열려 있고, prod는 `ADMIN_TOKEN` 필수
+- 관리 기능은 모두 `/manage`(ADMIN 세션 로그인)에 있다. 예전 `/admin/**` + `X-Admin-Token`(`ADMIN_TOKEN`) 방식은 환경변수를 줄이려고 2026-11-27에 삭제
 - 배포 파이프라인 미착수 (로드맵상 가장 큰 리스크로 지목된 항목)
 
 ## 다음에 할 일 — 회원 기능 로드맵 (2026-11-27 확정, 한 단계씩 진행)
@@ -240,7 +241,7 @@ P2로 미뤄 두었던 회원가입/로그인을 이번에 구현한다. 비회�
 
 | 단계 | 내용 | 상태 |
 |---|---|---|
-| 1 | **회원가입/로그인**: Spring Security(세션 + BCrypt), 로그인 ID는 **아이디**(이메일 수집 안 함), 로그인 상태 유지(remember-me), 헤더에 로그인 상태. 비회원은 모든 화면 그대로 접근. CSRF: 폼은 Thymeleaf 자동 토큰, 요약 `fetch`는 헤더로 토큰 전달, `/admin/**`(curl, X-Admin-Token)은 CSRF 제외 | ✅ `SecurityConfig`, `Member`(`members` 테이블), `MemberService`, `AuthController`(가입 직후 자동 로그인). prod는 환경변수 `REMEMBER_ME_KEY` 필수 |
+| 1 | **회원가입/로그인**: Spring Security(세션 + BCrypt), 로그인 ID는 **아이디**(이메일 수집 안 함), 로그인 상태 유지(remember-me), 헤더에 로그인 상태. 비회원은 모든 화면 그대로 접근. CSRF: 폼은 Thymeleaf 자동 토큰, 요약 `fetch`는 헤더로 토큰 전달 | ✅ `SecurityConfig`, `Member`(`members` 테이블), `MemberService`, `AuthController`(가입 직후 자동 로그인). 로그인 상태 유지는 처음엔 서명 키(`REMEMBER_ME_KEY`) 방식이었다가, 환경변수를 줄이려고 DB 토큰 방식(`persistent_logins`, `JdbcTokenRepositoryImpl`)으로 변경 — 키 불필요, 로그아웃 시 토큰 삭제 |
 | 2 | **관리자 계정·관리자 페이지**: ADMIN 권한, 데이터 수집(목록조회 배치) 버튼, LLM 토큰 사용량(호출별 기록 → 합계/추정 비용), 트래픽 모니터링(공공데이터 API 일별 호출 수 vs 1,000회 한도, 사이트 요청 수) | ✅ `/manage`(`ManageController`, `AdminDashboardService`). 관리자는 환경변수 `ADMIN_USERNAMES`(콤마 구분)에 적힌 아이디 — 로그인 시 ADMIN 권한 부여(`MemberService`), 비밀번호를 환경변수에 두지 않음. 기록: `llm_usage`(호출별 토큰), `daily_metric`(api.list/api.detail/page.view, 한국 날짜, `MetricService`가 REQUIRES_NEW로 커밋), 페이지 조회는 `PageViewFilter`(GET, 확장자 없는 경로, /admin·/manage 제외). 추정 비용은 `llm.input/output-price-per-million` 단가로 계산(모델별 단가 구분 없음). JVM 시간대는 Dockerfile에서 Asia/Seoul |
 | 3 | **내 조건 저장**: 회원 계정에 조건(생애주기/가구상황/관심주제/나이/지역) 저장, 로그인하면 조건 입력 없이 바로 맞춤 혜택. 가입 직후 조건 입력으로 안내 | ⬜ |
 | 4 | **마이페이지**: 조건 변경, 비밀번호 변경(현재 비밀번호 확인), 회원 탈퇴(조건·즐겨찾기 함께 삭제) | ⬜ |
@@ -256,7 +257,7 @@ P2로 미뤄 두었던 회원가입/로그인을 이번에 구현한다. 비회�
 1. ✅ 상세조회 연동 (2026-11-27): `GET /benefits/{servId}` → `WelfareBenefitDetailService.getOrFetch()`가 DB 캐시 우선, 없으면 `WelfareApiService.fetchDetail()` 온디맨드 호출 후 저장. 화면은 `benefit-detail.html`, 공통 스타일은 `static/css/app.css`. ⚠️ 응답 루트 태그 `wantedDtl`은 **추정값** — 실키로 아직 호출 안 해봄, 처음 실키로 열어볼 때 파싱 결과(필드가 비어있지 않은지) 확인 필요
 2. ✅ LLM 요약 (2026-11-27): `LlmSummaryService`가 **공식 Anthropic Java SDK**(`anthropic-java`, 계획했던 RestClient 직접 호출 대신)로 `claude-haiku-5-5`(effort low, 2026-11-27에 opus-5-5에서 비용 때문에 변경 — Haiku 5.5는 거절 시 서버측 fallback이 없어 fallback 설정 제거) 호출 → `llmSummary`에 캐싱, 상세 화면 "쉽게 말하면" 박스에 표시. 키는 환경변수 `ANTHROPIC_API_KEY` (`llm.api-key`) — 비어 있으면 요약을 건너뛰고 원문만 보여줌, 호출 실패해도 화면은 원문으로 뜨고 다음 조회 때 재시도. ⚠️ 실제 키로 요약 품질 확인은 아직 안 함 (프롬프트는 `LlmSummaryService.SYSTEM_PROMPT`). 첫 조회 시 요약 생성 때문에 몇 초 걸릴 수 있음. 요약 1건마다 `LLM 요약 servId=... model=... stop=... input_tokens=... output_tokens=...` INFO 로그를 남김 (비용 = 입력 토큰×$0.10 + 출력 토큰×$0.50 / 100만, haiku-5-5 기준 — 프롬프트 10만 토큰 이하일 때)
 3. ✅ "최근 업데이트" 뱃지, 즐겨찾기 (2026-11-27). 즐겨찾기 화면은 `/favorites` 첫 요청 때 스크립트가 localStorage의 servId를 읽어 `/favorites?ids=...`로 다시 요청하는 방식 (서버는 최대 100개, 저장한 순서의 역순=최신순으로 렌더링). 결과 카드는 `templates/fragments/benefit-card.html` 프래그먼트로 매칭 결과/즐겨찾기 화면이 공유. ⚠️ 뱃지 기준 30일은 실데이터 분포를 안 보고 정한 값 — 실데이터로 대부분 카드에 붙거나 거의 안 붙으면 조정
-4. 배포 — 플랫폼 공통 준비는 완료 (2026-11-27): `Dockerfile`(멀티스테이지, `SPRING_PROFILES_ACTIVE=prod`), `.dockerignore`(로컬 실키 파일 제외), `application-prod.yml`(환경변수 `PORT`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`(MySQL), `ADMIN_TOKEN`, `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`). prod 기동·토큰 검사는 H2로 대신 띄워 확인했고, **Docker 이미지 빌드와 실제 MySQL 연결은 아직 미검증**(이 PC에 Docker 없음). **플랫폼은 Railway로 결정** (GitHub `IntHyunGyu/welfare-capstone` 연결 배포, 루트 `Dockerfile` 자동 인식은 공식 문서로 확인). Railway 앱 서비스 변수: `DB_URL=jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8`, `DB_USERNAME=${{MySQL.MYSQLUSER}}`, `DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}` (MySQL 서비스 이름이 `MySQL`일 때), `PORT=8080`(Railway가 PORT를 주입하는지 문서로 확인 못 해서 명시), `ADMIN_TOKEN`, `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`. 공개 주소는 Settings → Networking → Generate Domain (포트 8080). 남은 것: 계정/MySQL 생성 → 환경변수 등록 → 배포 후 `curl -X POST <주소>/admin/batch/welfare-list -H "X-Admin-Token: <값>"`으로 데이터 1회 적재
+4. 배포 — 플랫폼 공통 준비는 완료 (2026-11-27): `Dockerfile`(멀티스테이지, `SPRING_PROFILES_ACTIVE=prod`), `.dockerignore`(로컬 실키 파일 제외), `application-prod.yml`(환경변수 `PORT`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`(MySQL), `ADMIN_TOKEN`, `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`). prod 기동·토큰 검사는 H2로 대신 띄워 확인했고, **Docker 이미지 빌드와 실제 MySQL 연결은 아직 미검증**(이 PC에 Docker 없음). **플랫폼은 Railway로 결정** (GitHub `IntHyunGyu/welfare-capstone` 연결 배포, 루트 `Dockerfile` 자동 인식은 공식 문서로 확인). Railway 앱 서비스 변수: `DB_URL=jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8`, `DB_USERNAME=${{MySQL.MYSQLUSER}}`, `DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}` (MySQL 서비스 이름이 `MySQL`일 때), `PORT=8080`(Railway가 PORT를 주입하는지 문서로 확인 못 해서 명시), `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`, `ADMIN_USERNAMES`(관리자 아이디) — 총 7개 (`ADMIN_TOKEN`, `REMEMBER_ME_KEY`는 2026-11-27에 불필요해져 삭제). 공개 주소는 Settings → Networking → Generate Domain (포트 8080). 남은 것: 계정/MySQL 생성 → 환경변수 등록 → 배포 후 `curl -X POST <주소>/admin/batch/welfare-list -H "X-Admin-Token: <값>"`으로 데이터 1회 적재
 
 ## 발표 시 강조 포인트
 

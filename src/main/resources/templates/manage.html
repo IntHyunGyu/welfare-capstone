@@ -108,6 +108,37 @@
         </dl>
         <p class="panel-hint">추정 비용은 설정된 단가(<code>llm.input/output-price-per-million</code>)로 계산한 값이라 실제 청구액은 Anthropic 콘솔에서 확인하세요. 이 기록은 관리자 페이지를 배포한 뒤부터 쌓입니다.</p>
     </section>
+
+    <section class="panel">
+        <h2>요약 다시 만들기</h2>
+        <div class="form-notice success" th:if="${summaryMessage}" th:text="${summaryMessage}" role="status"></div>
+        <form class="inline-action" th:action="@{/manage/summaries/reset}" method="post"
+              onsubmit="return confirm(this.servId.value.trim() ? '이 혜택의 저장된 요약을 지울까요?' : '저장된 요약을 모두 지울까요? 다음 상세 조회 때마다 LLM을 다시 호출해요.');">
+            <div class="field">
+                <label for="servId">서비스 ID (비우면 전체)</label>
+                <input type="text" id="servId" name="servId" placeholder="예: WLF00004467" maxlength="20">
+            </div>
+            <button class="secondary-btn" type="submit">저장된 요약 지우기</button>
+        </form>
+        <p class="panel-hint">프롬프트나 모델을 바꾼 뒤 쓰세요. 지운 요약은 다음에 그 상세 화면을 열 때 지금 설정으로 다시 만들어집니다.</p>
+    </section>
+
+    <section class="panel">
+        <h2>코드표 라벨 대조</h2>
+        <p class="panel-hint lead">DB에 저장된 라벨과 건수입니다. 화면의 선택지 이름이 여기 표기와 한 글자라도 다르면 그 항목은 매칭이 0건이 돼요 (<code>CodeLabelTest</code>가 실데이터 표기로 고정).</p>
+        <div class="label-groups">
+            <div class="label-group" th:each="group : ${labelCounts}">
+                <h3 th:text="${group.key}"></h3>
+                <p class="empty-note" th:if="${group.value.isEmpty()}">데이터 없음</p>
+                <ul>
+                    <li th:each="label : ${group.value}">
+                        <span th:text="${label.key}"></span>
+                        <span class="count" th:text="${#numbers.formatInteger(label.value, 1, 'COMMA')}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
 </div>
 </body>
 </html>

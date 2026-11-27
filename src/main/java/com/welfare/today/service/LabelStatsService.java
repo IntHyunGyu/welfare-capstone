@@ -1,10 +1,8 @@
-package com.welfare.today.controller;
+package com.welfare.today.service;
 
 import com.welfare.today.entity.WelfareBenefit;
 import com.welfare.today.repository.WelfareBenefitRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -16,26 +14,25 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * DB에 저장된 생애주기/가구상황/관심주제 라벨과 건수를 보여준다.
+ * DB에 저장된 생애주기/가구상황/관심주제 라벨과 건수를 센다.
  * 코드표 enum 라벨이 실제 API 표기와 다르면 매칭이 조용히 0건이 되므로, 그걸 실데이터로 대조하는 용도.
  */
-@RestController
-@RequestMapping("/admin/labels")
-public class LabelAdminController {
+@Service
+public class LabelStatsService {
 
     private final WelfareBenefitRepository benefitRepository;
 
-    public LabelAdminController(WelfareBenefitRepository benefitRepository) {
+    public LabelStatsService(WelfareBenefitRepository benefitRepository) {
         this.benefitRepository = benefitRepository;
     }
 
-    @GetMapping
-    public Map<String, Map<String, Long>> labels() {
+    /** 분류 이름 → (라벨 → 건수). 순서는 생애주기, 가구상황, 관심주제. */
+    public Map<String, Map<String, Long>> labelCounts() {
         List<WelfareBenefit> all = benefitRepository.findAll();
         Map<String, Map<String, Long>> result = new LinkedHashMap<>();
-        result.put("lifeNmArray", countTokens(all, WelfareBenefit::getLifeNmArray));
-        result.put("trgterIndvdlNmArray", countTokens(all, WelfareBenefit::getTrgterIndvdlNmArray));
-        result.put("intrsThemaNmArray", countTokens(all, WelfareBenefit::getIntrsThemaNmArray));
+        result.put("생애주기", countTokens(all, WelfareBenefit::getLifeNmArray));
+        result.put("가구상황", countTokens(all, WelfareBenefit::getTrgterIndvdlNmArray));
+        result.put("관심주제", countTokens(all, WelfareBenefit::getIntrsThemaNmArray));
         return result;
     }
 

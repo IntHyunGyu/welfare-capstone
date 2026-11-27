@@ -11,7 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/** 사용자 화면 조회(GET) 수를 날짜별로 센다. 정적 파일(확장자 있는 경로)과 관리용 경로는 제외. */
+/** 사용자 화면 조회(GET) 수를 날짜별로 센다. 정적 파일(확장자 있는 경로)과 관리자 페이지는 제외. */
 @Component
 public class PageViewFilter extends OncePerRequestFilter {
 
@@ -36,7 +36,6 @@ public class PageViewFilter extends OncePerRequestFilter {
         }
         String path = request.getRequestURI().substring(request.getContextPath().length());
         return !path.contains(".")
-                && !path.startsWith("/admin")
                 && !path.startsWith("/manage")
                 && !path.startsWith("/h2-console")
                 && !path.startsWith("/error");

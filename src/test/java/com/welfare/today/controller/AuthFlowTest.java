@@ -1,7 +1,9 @@
 package com.welfare.today.controller;
 
 import com.welfare.today.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -37,6 +39,9 @@ class AuthFlowTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void anonymousVisitorCanStillUseTheSite() throws Exception {
@@ -95,7 +100,7 @@ class AuthFlowTest {
     }
 
     @Test
-    void rememberMeSetsLongLivedCookie() throws Exception {
+    void rememberMeTokenIsStoredInDbLogsInWithoutSessionAndIsRemovedOnLogout() throws Exception {
         signUp("keepuser", "password123", "password123");
 
         MvcResult result = mockMvc.perform(post("/login").with(csrf())
@@ -104,16 +109,31 @@ class AuthFlowTest {
                         .param("remember-me", "on"))
                 .andExpect(cookie().exists("remember-me"))
                 .andReturn();
-        assertThat(result.getResponse().getCookie("remember-me").getMaxAge()).isEqualTo(60 * 60 * 24 * 30);
+        Cookie rememberMe = result.getResponse().getCookie("remember-me");
+        assertThat(rememberMe.getMaxAge()).isEqualTo(60 * 60 * 24 * 30);
+        assertThat(storedTokens("keepuser")).isEqualTo(1);
+
+        // 세션 없이 쿠키만 들고 와도(브라우저를 다시 열거나 서버가 재배포된 경우) 로그인 상태다.
+        MvcResult revisit = mockMvc.perform(get("/profile").cookie(rememberMe))
+                .andExpect(content().string(containsString("keepuser")))
+                .andReturn();
+
+        mockMvc.perform(post("/logout").with(csrf())
+                .session((MockHttpSession) revisit.getRequest().getSession(false))
+                .cookie(revisit.getResponse().getCookie("remember-me")));
+        assertThat(storedTokens("keepuser")).isZero();
     }
 
     @Test
-    void scriptPostsNeedCsrfTokenButAdminCurlEndpointsDoNot() throws Exception {
+    void scriptPostsNeedCsrfToken() throws Exception {
         mockMvc.perform(post("/benefits/NOPE/summary")).andExpect(status().isForbidden());
         mockMvc.perform(post("/benefits/NOPE/summary").with(csrf())).andExpect(status().isNotFound());
         mockMvc.perform(post("/signup").param("username", "x")).andExpect(status().isForbidden());
+    }
 
-        mockMvc.perform(post("/admin/summaries/reset")).andExpect(status().isOk());
+    private Integer storedTokens(String username) {
+        return jdbcTemplate.queryForObject("select count(*) from persistent_logins where username = ?",
+                Integer.class, username);
     }
 
     private org.springframework.test.web.servlet.ResultActions signUp(String username, String password,
