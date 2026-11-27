@@ -289,4 +289,6 @@ section.field-group:last-of-type { border-bottom: none; }
     }
     .back-link:has(.nav-text) { min-width: 44px; justify-content: center; padding: 9px 12px; }
     .back-link:has(.nav-text) .icon { margin-right: 0; width: 18px; height: 18px; }
+    /* 로그인 아이디는 길면(최대 20자) 버튼 줄을 두 줄로 밀어낸다 — 로그아웃 버튼으로 로그인 상태는 보이므로 모바일에선 숨김 */
+    .account-name { display: none; }
 }
