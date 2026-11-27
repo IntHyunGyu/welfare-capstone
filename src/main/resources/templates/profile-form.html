@@ -66,13 +66,15 @@
                         <label for="ctpvNm">시도</label>
                         <select id="ctpvNm" name="ctpvNm">
                             <option value="">전체</option>
-                            <option th:each="sido : ${sidoList}" th:value="${sido}" th:text="${sido}"></option>
+                            <option th:each="sido : ${regions.keySet()}" th:value="${sido}" th:text="${sido}"></option>
                         </select>
                     </div>
                 </div>
                 <div class="field">
                     <label for="sggNm">시군구</label>
-                    <input type="text" id="sggNm" name="sggNm" placeholder="예: 송파구 (비워두면 전체)">
+                    <select id="sggNm" name="sggNm" disabled>
+                        <option value="">시도를 먼저 골라주세요</option>
+                    </select>
                 </div>
             </section>
         </div>
@@ -82,5 +84,7 @@
         </div>
     </form>
 </div>
+<script th:inline="javascript">window.REGIONS = /*[[${regions}]]*/ {};</script>
+<script th:src="@{/js/region.js}"></script>
 </body>
 </html>

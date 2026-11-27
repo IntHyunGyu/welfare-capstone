@@ -43,7 +43,11 @@ public class WelfareMatchService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("ctpvNm"), profile.ctpvNm()));
         }
         if (StringUtils.hasText(profile.sggNm())) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("sggNm"), profile.sggNm()));
+            // 시군구가 비어 있는 행은 시도 전체 대상 사업이라 그 시도의 어느 시군구 주민에게도 해당된다.
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.equal(root.get("sggNm"), profile.sggNm()),
+                    cb.isNull(root.get("sggNm")),
+                    cb.equal(root.get("sggNm"), "")));
         }
 
         return repository.findAll(spec, Sort.by(Sort.Direction.DESC, "lastModYmd"));

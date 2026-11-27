@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트** (19개, H2라 별도 DB 없이 돈다): `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
+- **테스트** (22개, H2라 별도 DB 없이 돈다): `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
@@ -33,7 +33,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 
 1. **수집 경로 (배치, 수동 트리거)**: `BatchAdminController` → `WelfareBenefitBatchService.syncAll()` → `WelfareApiService.fetchList(pageNo)` (XML → `WelfareListResponse` 레코드, `jackson-dataformat-xml`) → `WelfareBenefit` 엔티티로 `saveAll` (servId PK라 재실행 시 upsert). `welfare.api.page-size`/`max-pages`(`WelfareApiProperties`)가 호출 횟수를 제어 — quota 보호용 안전장치이므로 스케줄러 추가 금지 방침.
 2. **조회 경로 (사용자)**: `GET /profile` 폼 → `POST /profile`이 `WelfareProfileForm`(체크박스 바인딩용 가변 POJO)을 불변 `WelfareProfile` 레코드로 바꿔 `HttpSession`에 저장 → `GET /match`가 세션에서 꺼내 `WelfareMatchService.match()` 호출. 세션에 프로필 없으면 `/profile`로 리다이렉트.
-3. **매칭의 코드↔라벨 변환**: 폼/세션은 API **코드값**(`001`, `010`…)을 들고 있지만, DB에는 API 응답의 **한글 이름** 콤마문자열(`lifeNmArray` 등)이 저장되어 있다. 그래서 `LifeStage`/`HouseholdSituation`/`InterestTheme`의 `labelOfCode()`로 라벨 변환 후 `LIKE %라벨%`. 같은 카테고리 내 선택은 OR, 카테고리 간은 AND, 시도/시군구는 equal. 코드표 enum 라벨이 API 응답 표기와 한 글자라도 다르면 매칭이 조용히 0건이 되므로 라벨 수정 시 주의.
+3. **매칭의 코드↔라벨 변환**: 폼/세션은 API **코드값**(`001`, `010`…)을 들고 있지만, DB에는 API 응답의 **한글 이름** 콤마문자열(`lifeNmArray` 등)이 저장되어 있다. 그래서 `LifeStage`/`HouseholdSituation`/`InterestTheme`의 `labelOfCode()`로 라벨 변환 후 `LIKE %라벨%`. 같은 카테고리 내 선택은 OR, 카테고리 간은 AND, 시도는 equal, 시군구는 equal 또는 시군구가 빈 행(시도 전체 사업). 코드표 enum 라벨이 API 응답 표기와 한 글자라도 다르면 매칭이 조용히 0건이 되므로 라벨 수정 시 주의.
 
 ## 프로젝트 개요
 
@@ -229,7 +229,7 @@ public record WelfareItem(
 
 **알려진 한계/TODO**
 - 나이(age) 필터는 화면 입력은 받지만 매칭 로직에는 미반영 (서비스별 연령 상한/하한이 로컬에 캐싱되어 있지 않음 — 상세조회 연동 시 재검토)
-- 시군구는 드롭다운 계층 없이 자유 텍스트 입력 (MVP 단순화)
+- 지역 선택 (2026-11-27): 시도/시군구 선택지를 하드코딩하지 않고 DB에 저장된 이름으로 만든다(`RegionService`, `static/js/region.js`가 시도에 따라 시군구 목록을 바꿈). 하드코딩 목록일 때 실데이터에서 광주광역시·전라남도가 0건이었다(표기가 달라서). 시군구를 고르면 시군구가 비어 있는 시도 전체 대상 사업도 함께 매칭된다
 - `resultCode` 실패 케이스 처리 로직 없음 (정상 케이스만 검증됨)
 - `/admin/**`는 `X-Admin-Token` 헤더 검사 (`AdminTokenInterceptor`, 값은 `welfare.admin.token`). 로컬은 토큰이 비어 있어 검사 없이 열려 있고, prod는 `ADMIN_TOKEN` 필수
 - 배포 파이프라인 미착수 (로드맵상 가장 큰 리스크로 지목된 항목)
