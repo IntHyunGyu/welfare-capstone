@@ -4,8 +4,14 @@
         return;
     }
     var box = target.closest('.summary-box');
+    var headers = {};
+    var csrfToken = document.querySelector('meta[name="_csrf"]');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+    if (csrfToken && csrfHeader) {
+        headers[csrfHeader.content] = csrfToken.content;
+    }
 
-    fetch(target.getAttribute('data-summary-url'), { method: 'POST' })
+    fetch(target.getAttribute('data-summary-url'), { method: 'POST', headers: headers })
         .then(function (response) {
             if (response.status !== 200) {
                 throw new Error('summary unavailable: ' + response.status);

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:fragment="icons">
+    <th:block th:fragment="common">
         <link rel="icon" th:href="@{/favicon.ico}" sizes="any">
         <link rel="icon" th:href="@{/favicon.svg}" type="image/svg+xml">
         <link rel="icon" th:href="@{/favicon-32.png}" type="image/png" sizes="32x32">
@@ -9,6 +9,9 @@
         <link rel="apple-touch-icon" th:href="@{/apple-touch-icon.png}">
         <link rel="manifest" th:href="@{/site.webmanifest}">
         <meta name="theme-color" content="#13A5A8">
+        <!-- 스크립트의 POST(fetch)가 CSRF 검사를 통과하도록 토큰을 헤더로 실어 보낼 때 쓴다 -->
+        <meta name="_csrf" th:if="${_csrf}" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:if="${_csrf}" th:content="${_csrf.headerName}">
     </th:block>
 </head>
 </html>

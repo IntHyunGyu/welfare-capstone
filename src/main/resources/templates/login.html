@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오늘의 복지 - 로그인</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
+</head>
+<body>
+<div class="container narrow">
+    <div class="top">
+        <a class="brand" th:href="@{/}">
+            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
+            <span>오늘의 복지</span>
+        </a>
+    </div>
+    <h1>로그인</h1>
+    <p class="subtitle">로그인하지 않아도 혜택은 그대로 찾아볼 수 있어요.</p>
+
+    <div class="form-notice error" th:if="${param.error}" role="alert">아이디 또는 비밀번호가 맞지 않아요.</div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-card auth-card">
+            <div class="field">
+                <label for="username">아이디</label>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <label class="check">
+                <input type="checkbox" name="remember-me">
+                <span>로그인 상태 유지 (30일)</span>
+            </label>
+        </div>
+        <div class="submit-area">
+            <button class="submit" type="submit">로그인</button>
+        </div>
+    </form>
+    <p class="auth-switch">아직 회원이 아니신가요? <a th:href="@{/signup}">회원가입</a></p>
+</div>
+</body>
+</html>

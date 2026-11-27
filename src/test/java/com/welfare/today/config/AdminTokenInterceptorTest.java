@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BatchAdminController.class)
-@Import(AdminTokenInterceptor.class)
+@Import({AdminTokenInterceptor.class, SecurityConfig.class})
 @TestPropertySource(properties = "welfare.admin.token=test-secret")
 class AdminTokenInterceptorTest {
 
@@ -32,6 +33,9 @@ class AdminTokenInterceptorTest {
 
     @MockBean
     private WelfareBenefitBatchService batchService;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     @Test
     void missingTokenIsRejected() throws Exception {

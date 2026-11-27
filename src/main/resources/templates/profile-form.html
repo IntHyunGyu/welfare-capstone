@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>오늘의 복지 - 내 정보 입력</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
-    <th:block th:replace="~{fragments/head :: icons}"></th:block>
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
 <div class="container">
@@ -14,7 +14,10 @@
             <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
             <span>오늘의 복지</span>
         </div>
-        <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
+        <div class="nav-links">
+            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
+            <th:block th:replace="~{fragments/account :: links}"></th:block>
+        </div>
     </div>
     <h1>내 조건을 알려주세요</h1>
     <p class="subtitle">체크만 하면, 오늘 나에게 해당되는 지자체 복지혜택을 찾아드려요.</p>

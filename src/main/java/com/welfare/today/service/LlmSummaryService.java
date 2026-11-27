@@ -57,7 +57,7 @@ public class LlmSummaryService {
     }
 
     /**
-     * 요약 문자열을 돌려준다. 모델이 요청을 거절하면 빈 값.
+     * 요약 문자열을 돌려준다. 모델이 요청을 거절하면 빈 값 (Haiku 5.5는 서버측 fallback이 없어 화면은 원문만 보여준다).
      */
     public Optional<String> summarize(WelfareBenefit benefit, WelfareBenefitDetail detail) {
         MessageCreateParams params = MessageCreateParams.builder()
@@ -65,8 +65,6 @@ public class LlmSummaryService {
                 .maxTokens(16000L)
                 .system(SYSTEM_PROMPT)
                 .outputConfig(BetaOutputConfig.builder().effort(BetaOutputConfig.Effort.LOW).build())
-                .addBeta("server-side-fallback-2026-07-01")
-                .fallbacksDefault()
                 .addUserMessage(buildUserMessage(benefit, detail))
                 .build();
 

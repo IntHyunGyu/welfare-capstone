@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>오늘의 복지 - 내 혜택 결과</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
-    <th:block th:replace="~{fragments/head :: icons}"></th:block>
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
 <div class="container wide">
@@ -21,6 +21,7 @@
         <div class="nav-links">
             <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
             <a class="back-link" th:href="@{/profile}">← 조건 다시 입력</a>
+            <th:block th:replace="~{fragments/account :: links}"></th:block>
         </div>
     </div>
 

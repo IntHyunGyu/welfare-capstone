@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${benefit.servNm} + ' - 오늘의 복지'">오늘의 복지 - 혜택 상세</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
-    <th:block th:replace="~{fragments/head :: icons}"></th:block>
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
 <div class="container wide">
@@ -17,6 +17,7 @@
         <div class="nav-links">
             <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
             <a class="back-link" th:href="@{/match}">← 목록으로</a>
+            <th:block th:replace="~{fragments/account :: links}"></th:block>
         </div>
     </div>
 

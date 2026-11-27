@@ -25,3 +25,6 @@ welfare:
   admin:
     # /admin/** 호출 시 X-Admin-Token 헤더로 보내야 하는 값
     token: ${ADMIN_TOKEN}
+  security:
+    # "로그인 상태 유지" 쿠키 서명 키. 재배포해도 바뀌지 않도록 환경변수로 고정한다.
+    remember-me-key: ${REMEMBER_ME_KEY}
