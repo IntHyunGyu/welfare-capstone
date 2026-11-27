@@ -235,3 +235,7 @@ section.field-group:last-of-type { border-bottom: none; }
     .result-card:hover { transform: none; }
     .spinner { animation-duration: 2.4s; }
 }
+
+/* 터치 영역 최소 44px (고령 사용자 기준) — 모양은 그대로 두고 높이만 보장한다 */
+.back-link, .fav-btn, .pill-link, .chip .chip-label { min-height: 44px; }
+.text-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; }

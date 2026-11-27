@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,6 +22,8 @@
     <h1>내 조건을 알려주세요</h1>
     <p class="subtitle">체크만 하면, 오늘 나에게 해당되는 지자체 복지혜택을 찾아드려요.</p>
 
+    <div class="form-notice error" th:if="${formError}" th:text="${formError}" role="alert"></div>
+
     <form th:action="@{/profile}" method="post">
         <div class="form-card">
             <section class="field-group">
@@ -29,7 +31,8 @@
                 <p class="hint">해당되는 항목을 모두 골라주세요</p>
                 <div class="chip-group">
                     <label class="chip" th:each="stage : ${lifeStages}">
-                        <input type="checkbox" name="lifeCodes" th:value="${stage.code}">
+                        <input type="checkbox" name="lifeCodes" th:value="${stage.code}"
+                               th:checked="${#lists.contains(profileForm.lifeCodes, stage.code)}">
                         <span class="chip-label" th:text="${stage.label}"></span>
                     </label>
                 </div>
@@ -40,7 +43,8 @@
                 <p class="hint">해당되는 항목을 모두 골라주세요</p>
                 <div class="chip-group">
                     <label class="chip" th:each="h : ${householdSituations}">
-                        <input type="checkbox" name="householdCodes" th:value="${h.code}">
+                        <input type="checkbox" name="householdCodes" th:value="${h.code}"
+                               th:checked="${#lists.contains(profileForm.householdCodes, h.code)}">
                         <span class="chip-label" th:text="${h.label}"></span>
                     </label>
                 </div>
@@ -51,7 +55,8 @@
                 <p class="hint">궁금한 주제를 모두 골라주세요</p>
                 <div class="chip-group">
                     <label class="chip" th:each="t : ${interestThemes}">
-                        <input type="checkbox" name="themeCodes" th:value="${t.code}">
+                        <input type="checkbox" name="themeCodes" th:value="${t.code}"
+                               th:checked="${#lists.contains(profileForm.themeCodes, t.code)}">
                         <span class="chip-label" th:text="${t.label}"></span>
                     </label>
                 </div>
@@ -59,23 +64,26 @@
 
             <section class="field-group">
                 <h2>나이 · 지역</h2>
-                <p class="hint">정확한 결과를 위해 입력해주세요</p>
+                <p class="hint">시도를 고르면 그 지역에서 받을 수 있는 혜택만 보여드려요</p>
                 <div class="row2">
                     <div class="field">
                         <label for="age">나이</label>
-                        <input type="number" id="age" name="age" min="0" max="120" placeholder="예: 27">
+                        <input type="number" id="age" name="age" min="0" max="120" placeholder="예: 27"
+                               th:value="${profileForm.age}" aria-describedby="age-hint">
+                        <p class="field-hint" id="age-hint">아직은 결과에 반영되지 않아요</p>
                     </div>
                     <div class="field">
                         <label for="ctpvNm">시도</label>
                         <select id="ctpvNm" name="ctpvNm">
                             <option value="">전체</option>
-                            <option th:each="sido : ${regions.keySet()}" th:value="${sido}" th:text="${sido}"></option>
+                            <option th:each="sido : ${regions.keySet()}" th:value="${sido}" th:text="${sido}"
+                                    th:selected="${sido == profileForm.ctpvNm}"></option>
                         </select>
                     </div>
                 </div>
                 <div class="field">
                     <label for="sggNm">시군구</label>
-                    <select id="sggNm" name="sggNm" disabled>
+                    <select id="sggNm" name="sggNm" disabled th:attr="data-selected=${profileForm.sggNm}">
                         <option value="">시도를 먼저 골라주세요</option>
                     </select>
                 </div>

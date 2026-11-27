@@ -65,6 +65,33 @@ public class WelfareProfileForm {
         this.sggNm = sggNm;
     }
 
+    /** 세션에 저장된 프로필로 폼을 다시 채울 때 쓴다 ("조건 다시 입력" 시 이전 선택 유지). */
+    public static WelfareProfileForm from(WelfareProfile profile) {
+        WelfareProfileForm form = new WelfareProfileForm();
+        if (profile == null) {
+            return form;
+        }
+        form.setLifeCodes(new ArrayList<>(nullToEmpty(profile.lifeCodes())));
+        form.setHouseholdCodes(new ArrayList<>(nullToEmpty(profile.householdCodes())));
+        form.setThemeCodes(new ArrayList<>(nullToEmpty(profile.themeCodes())));
+        form.setAge(profile.age());
+        form.setCtpvNm(profile.ctpvNm());
+        form.setSggNm(profile.sggNm());
+        return form;
+    }
+
+    /** 분류 칩도 시도도 하나도 안 골랐는지 — 이러면 전체 혜택이 한꺼번에 나와 매칭 의미가 없다. */
+    public boolean hasNoCondition() {
+        return nullToEmpty(lifeCodes).isEmpty()
+                && nullToEmpty(householdCodes).isEmpty()
+                && nullToEmpty(themeCodes).isEmpty()
+                && (ctpvNm == null || ctpvNm.isBlank());
+    }
+
+    private static List<String> nullToEmpty(List<String> list) {
+        return list == null ? List.of() : list;
+    }
+
     public WelfareProfile toProfile() {
         return new WelfareProfile(lifeCodes, householdCodes, themeCodes, age, ctpvNm, sggNm);
     }

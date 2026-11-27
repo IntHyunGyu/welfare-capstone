@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트** (36개, H2라 별도 DB 없이 돈다): `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지/CSRF 규칙), `ManageAccessTest`(관리자 접근 권한/수집 버튼/페이지 조회 집계), `MetricServiceTest`, `AdminDashboardServiceTest`(일별 집계·추정 비용), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
+- **테스트** (40개, H2라 별도 DB 없이 돈다): `ProfileFlowTest`(조건 다시 입력 시 이전 선택 유지, 조건 없이 제출 차단), `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지/CSRF 규칙), `ManageAccessTest`(관리자 접근 권한/수집 버튼/페이지 조회 집계), `MetricServiceTest`, `AdminDashboardServiceTest`(일별 집계·추정 비용), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
