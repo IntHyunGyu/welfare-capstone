@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오늘의 복지 - 저장한 혜택</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="container wide">
+    <div class="top">
+        <div>
+            <div class="brand">
+                <div class="mark">오</div>
+                <span>오늘의 복지</span>
+            </div>
+            <h1>저장한 혜택</h1>
+            <p class="subtitle" th:if="${benefits != null}">
+                <strong th:text="${#lists.size(benefits)}"></strong>건을 저장해 두었어요 · 이 기기에만 저장돼요
+            </p>
+        </div>
+        <div class="nav-links">
+            <a class="back-link" th:href="@{/match}">맞춤 혜택</a>
+            <a class="back-link" th:href="@{/profile}">← 조건 입력</a>
+        </div>
+    </div>
+
+    <div class="empty" th:if="${benefits == null}" th:attr="data-fav-load=@{/favorites}">
+        저장한 혜택을 불러오는 중이에요…
+    </div>
+
+    <div class="empty" th:if="${benefits != null and #lists.isEmpty(benefits)}">
+        아직 저장한 혜택이 없어요.<br>혜택 카드의 ☆ 저장 버튼을 누르면 여기에 모아 볼 수 있어요.
+    </div>
+
+    <th:block th:each="b : ${benefits}">
+        <div th:replace="~{fragments/benefit-card :: card(${b})}"></div>
+    </th:block>
+</div>
+<script th:src="@{/js/favorites.js}"></script>
+</body>
+</html>

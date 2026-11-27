@@ -13,14 +13,22 @@
             <div class="mark">오</div>
             <span>오늘의 복지</span>
         </div>
-        <a class="back-link" th:href="@{/match}">← 목록으로</a>
+        <div class="nav-links">
+            <a class="back-link" th:href="@{/favorites}">★ 저장한 혜택</a>
+            <a class="back-link" th:href="@{/match}">← 목록으로</a>
+        </div>
     </div>
 
     <div class="detail-header">
         <p class="dept" th:if="${benefit.bizChrDeptNm}" th:text="${benefit.bizChrDeptNm}"></p>
-        <h1 th:text="${benefit.servNm}"></h1>
+        <div class="card-head">
+            <h1 th:text="${benefit.servNm}"></h1>
+            <button type="button" class="fav-btn" th:attr="data-fav-id=${benefit.servId}" aria-pressed="false">☆ 저장</button>
+        </div>
         <p class="dgst" th:if="${benefit.servDgst}" th:text="${benefit.servDgst}"></p>
         <div class="meta">
+            <span class="badge-new" th:if="${benefit.recentlyUpdated}"
+                  th:text="'최근 업데이트 · ' + ${#strings.substring(benefit.lastModYmd, 4, 6)} + '.' + ${#strings.substring(benefit.lastModYmd, 6, 8)}"></span>
             <span th:if="${benefit.sprtCycNm}" th:text="'지원주기 · ' + ${benefit.sprtCycNm}"></span>
             <span th:if="${benefit.srvPvsnNm}" th:text="'제공방식 · ' + ${benefit.srvPvsnNm}"></span>
             <span th:if="${benefit.ctpvNm}" th:text="${benefit.ctpvNm} + (${benefit.sggNm} != null ? ' ' + ${benefit.sggNm} : '')"></span>
@@ -59,5 +67,6 @@
         <a class="pill-link" th:href="${benefit.servDtlLink}" target="_blank" rel="noopener">복지로에서 원문 보기 →</a>
     </div>
 </div>
+<script th:src="@{/js/favorites.js}"></script>
 </body>
 </html>

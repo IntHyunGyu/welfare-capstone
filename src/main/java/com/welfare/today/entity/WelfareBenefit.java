@@ -6,7 +6,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * 목록조회(LcgvWelfarelist) 캐시 - 배치로 미리 적재해 로컬 DB에서 조회한다.
@@ -14,6 +18,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "welfare_benefit")
 public class WelfareBenefit {
+
+    private static final int RECENT_UPDATE_DAYS = 30;
+    private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
     @Id
     @Column(name = "serv_id", length = 20)
@@ -144,5 +151,17 @@ public class WelfareBenefit {
 
     public LocalDateTime getFetchedAt() {
         return fetchedAt;
+    }
+
+    public boolean isRecentlyUpdated() {
+        if (lastModYmd == null) {
+            return false;
+        }
+        try {
+            LocalDate modified = LocalDate.parse(lastModYmd, DateTimeFormatter.BASIC_ISO_DATE);
+            return !modified.isBefore(LocalDate.now(SEOUL).minusDays(RECENT_UPDATE_DAYS));
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 }

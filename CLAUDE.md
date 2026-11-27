@@ -74,8 +74,8 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 4. ✅ LLM 요약 — 상세조회의 `sprtTrgtCn`(지원대상)/`slctCritCn`(선정기준)/`alwServCn`(지원내용) 같은 딱딱한 행정 문구를 쉬운 말로 변환 (실키로 품질 확인 필요)
 
 **P1 (여유 있으면)**
-5. ⬜ "최근 업데이트" 뱃지 (`lastModYmd` 기준)
-6. ⬜ 즐겨찾기 (localStorage)
+5. ✅ "최근 업데이트" 뱃지 (`lastModYmd`가 30일 이내 — `WelfareBenefit.isRecentlyUpdated()`)
+6. ✅ 즐겨찾기 (localStorage 키 `favoriteServIds`, `static/js/favorites.js` + `GET /favorites`)
 
 **P2 (발표 시 "향후 계획"으로만 언급, 구현 안 함)**
 - 실시간 푸시 알림, 전국 완전 자동 연동, 회원가입/로그인
@@ -206,7 +206,7 @@ public record WelfareItem(
 | 5~7주 | 배치 수집 로직 + 매칭 서비스(Controller/Thymeleaf) | ✅ (목록조회 배치·매칭·화면 전부 실데이터로 검증됨) |
 | 8주 | 중간발표 (프로필 입력 → 혜택 목록 데모) | 데모 가능한 상태 |
 | 9~11주 | LLM 요약 기능 연동 | ✅ 구현 (실키 검증 남음) |
-| 12~13주 | 최근 업데이트 뱃지, 즐겨찾기(localStorage) | ⬜ |
+| 12~13주 | 최근 업데이트 뱃지, 즐겨찾기(localStorage) | ✅ |
 | 14주 | 배포 + 통합 테스트 | ⬜ |
 | 15~16주 | 발표 준비 | ⬜ |
 
@@ -234,7 +234,7 @@ public record WelfareItem(
 
 1. ✅ 상세조회 연동 (2026-11-27): `GET /benefits/{servId}` → `WelfareBenefitDetailService.getOrFetch()`가 DB 캐시 우선, 없으면 `WelfareApiService.fetchDetail()` 온디맨드 호출 후 저장. 화면은 `benefit-detail.html`, 공통 스타일은 `static/css/app.css`. ⚠️ 응답 루트 태그 `wantedDtl`은 **추정값** — 실키로 아직 호출 안 해봄, 처음 실키로 열어볼 때 파싱 결과(필드가 비어있지 않은지) 확인 필요
 2. ✅ LLM 요약 (2026-11-27): `LlmSummaryService`가 **공식 Anthropic Java SDK**(`anthropic-java`, 계획했던 RestClient 직접 호출 대신)로 `claude-opus-5-5`(effort low, 거절 시 서버측 fallback 켬) 호출 → `llmSummary`에 캐싱, 상세 화면 "쉽게 말하면" 박스에 표시. 키는 환경변수 `ANTHROPIC_API_KEY` (`llm.api-key`) — 비어 있으면 요약을 건너뛰고 원문만 보여줌, 호출 실패해도 화면은 원문으로 뜨고 다음 조회 때 재시도. ⚠️ 실제 키로 요약 품질 확인은 아직 안 함 (프롬프트는 `LlmSummaryService.SYSTEM_PROMPT`). 첫 조회 시 요약 생성 때문에 몇 초 걸릴 수 있음
-3. "최근 업데이트" 뱃지 (`lastModYmd` 기준), 즐겨찾기(localStorage) — P1
+3. ✅ "최근 업데이트" 뱃지, 즐겨찾기 (2026-11-27). 즐겨찾기 화면은 `/favorites` 첫 요청 때 스크립트가 localStorage의 servId를 읽어 `/favorites?ids=...`로 다시 요청하는 방식 (서버는 최대 100개, 저장한 순서의 역순=최신순으로 렌더링). 결과 카드는 `templates/fragments/benefit-card.html` 프래그먼트로 매칭 결과/즐겨찾기 화면이 공유. ⚠️ 뱃지 기준 30일은 실데이터 분포를 안 보고 정한 값 — 실데이터로 대부분 카드에 붙거나 거의 안 붙으면 조정
 4. 배포 파이프라인 확인 (Railway/Render/AWS 프리티어 중 택1) — 리스크 큰 항목이라 우선순위 앞당기는 것도 고려
 
 ## 발표 시 강조 포인트
