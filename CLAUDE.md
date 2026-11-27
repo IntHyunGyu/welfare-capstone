@@ -5,18 +5,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 이 문서는 새 Claude Code 세션이 이 캡스톤 프로젝트를 이어서 진행할 수 있도록 지금까지의 논의/결정 사항과 진행 상황을 정리한 기획 문서입니다.
 **2026-09-23 기준 진행 상황**: 프로젝트 스캐폴딩부터 프로필 입력→매칭 화면까지 구현 완료, 실제 서비스키로 배치 실행까지 검증 완료. 자세한 내용은 하단 [진행 상황](#진행-상황-2026-09-23-기준) 섹션 참고.
 
-**2026-11-27 추가 결정**: ① 프로필 입력/매칭 결과 화면 UI를 토스 스타일(칩 토글, 카드+그림자)로 리디자인. ② 로컬 개발 머신에 JDK가 8뿐이라 Temurin JDK 17 설치, `JAVA_HOME`을 17로 전환. ③ **로컬 DB를 H2로 확정** — MySQL 구축/연동은 배포 시점으로 미룸 (위 [DB](#개발-명령어) 항목 참고).
+**2026-11-27 추가 결정**: ① 프로필 입력/매칭 결과 화면 UI를 토스 스타일(칩 토글, 카드+그림자)로 리디자인. ② 로컬 개발 머신에 JDK가 8뿐이라 Temurin JDK 17 설치. 다른 프로젝트가 1.8을 쓰므로 기본 `JAVA_HOME`은 1.8로 두고, 이 프로젝트는 `mvn17.cmd`로만 17을 쓴다. ③ **로컬 DB를 H2로 확정** — MySQL 구축/연동은 배포 시점으로 미룸 (위 [DB](#개발-명령어) 항목 참고).
 
 ## 개발 명령어
 
-Maven Wrapper(`mvnw`)는 없음 — 시스템에 설치된 `mvn`을 직접 사용한다.
+Maven Wrapper(`mvnw`)는 없음. **이 PC의 기본 JDK는 1.8**(다른 프로젝트용)이고 이 프로젝트만 JDK 17이 필요하므로, `mvn` 대신 저장소 루트의 `mvn17.cmd`를 쓴다 — 그 실행에만 Temurin 17(`%ProgramFiles%\Eclipse Adoptium\jdk-17*`, 또는 `JDK17_HOME`)을 `JAVA_HOME`으로 잡고 `mvn`에 인자를 그대로 넘긴다. 그냥 `mvn`으로 돌리면 Java 8로 record 문법 컴파일이 실패한다.
 
 ```bash
-mvn clean package                                   # 빌드 (+테스트)
-mvn -DskipTests package                             # 테스트 생략 빌드
-mvn spring-boot:run -Dspring-boot.run.profiles=local  # 실키가 든 local 프로필로 실행 (http://localhost:8080 → /profile 리다이렉트)
-mvn test                                            # 전체 테스트
-mvn test -Dtest=TodayWelfareApplicationTests        # 단일 테스트 클래스 (메서드: -Dtest=Class#method)
+.\mvn17.cmd clean package                                   # 빌드 (+테스트)
+.\mvn17.cmd -DskipTests package                             # 테스트 생략 빌드
+.\mvn17.cmd spring-boot:run "-Dspring-boot.run.profiles=local"  # 실키가 든 local 프로필로 실행 (http://localhost:8080 → /profile 리다이렉트)
+.\mvn17.cmd test                                            # 전체 테스트
+.\mvn17.cmd test -Dtest=TodayWelfareApplicationTests        # 단일 테스트 클래스 (메서드: -Dtest=Class#method)
 curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배치 수동 실행 → DB 적재 (API quota 약 25회 소모)
 ```
 
