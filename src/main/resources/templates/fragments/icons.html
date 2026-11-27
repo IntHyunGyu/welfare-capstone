@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<svg th:fragment="bookmarkOutline" class="icon icon-outline" viewBox="0 0 24 24" aria-hidden="true"
+     fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+    <path d="M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v15.2a.8.8 0 0 1-1.27.65L12 16.4l-6.23 4.45A.8.8 0 0 1 4.5 20.2V5A1.5 1.5 0 0 1 6 3.5Z"/>
+    <path d="M12 13.2s-3.2-1.9-3.2-4.2c0-1.1.85-1.9 1.85-1.9.62 0 1.08.33 1.35.8.27-.47.73-.8 1.35-.8 1 0 1.85.8 1.85 1.9 0 2.3-3.2 4.2-3.2 4.2Z" stroke-width="1.5"/>
+</svg>
+<svg th:fragment="bookmarkFilled" class="icon icon-filled" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v15.2a.8.8 0 0 1-1.27.65L12 16.4l-6.23 4.45A.8.8 0 0 1 4.5 20.2V5A1.5 1.5 0 0 1 6 3.5Z"
+          fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M12 13.2s-3.2-1.9-3.2-4.2c0-1.1.85-1.9 1.85-1.9.62 0 1.08.33 1.35.8.27-.47.73-.8 1.35-.8 1 0 1.85.8 1.85 1.9 0 2.3-3.2 4.2-3.2 4.2Z"
+          fill="#FFFFFF"/>
+</svg>
+<th:block th:fragment="favButton(id)">
+    <button type="button" class="fav-btn" th:attr="data-fav-id=${id}" aria-pressed="false">
+        <svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>
+        <svg th:replace="~{fragments/icons :: bookmarkFilled}"></svg>
+        <span class="fav-label">저장</span>
+    </button>
+</th:block>
+</body>
+</html>

@@ -15,7 +15,7 @@
             <span>오늘의 복지</span>
         </div>
         <div class="nav-links">
-            <a class="back-link" th:href="@{/favorites}">★ 저장한 혜택</a>
+            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
             <a class="back-link" th:href="@{/match}">← 목록으로</a>
         </div>
     </div>
@@ -24,7 +24,7 @@
         <p class="dept" th:if="${benefit.bizChrDeptNm}" th:text="${benefit.bizChrDeptNm}"></p>
         <div class="card-head">
             <h1 th:text="${benefit.servNm}"></h1>
-            <button type="button" class="fav-btn" th:attr="data-fav-id=${benefit.servId}" aria-pressed="false">☆ 저장</button>
+            <th:block th:replace="~{fragments/icons :: favButton(${benefit.servId})}"></th:block>
         </div>
         <p class="dgst" th:if="${benefit.servDgst}" th:text="${benefit.servDgst}"></p>
         <div class="meta">

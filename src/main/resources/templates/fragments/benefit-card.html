@@ -4,7 +4,7 @@
 <div class="result-card" th:fragment="card(b)">
     <div class="card-head">
         <h2 th:text="${b.servNm}"></h2>
-        <button type="button" class="fav-btn" th:attr="data-fav-id=${b.servId}" aria-pressed="false">☆ 저장</button>
+        <th:block th:replace="~{fragments/icons :: favButton(${b.servId})}"></th:block>
     </div>
     <p class="dgst" th:if="${b.servDgst}" th:text="${b.servDgst}"></p>
     <div class="meta">

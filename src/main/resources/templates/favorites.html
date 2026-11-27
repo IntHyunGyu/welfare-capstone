@@ -31,7 +31,7 @@
     </div>
 
     <div class="empty" th:if="${benefits != null and #lists.isEmpty(benefits)}">
-        아직 저장한 혜택이 없어요.<br>혜택 카드의 ☆ 저장 버튼을 누르면 여기에 모아 볼 수 있어요.
+        아직 저장한 혜택이 없어요.<br>혜택 카드의 저장 버튼을 누르면 여기에 모아 볼 수 있어요.
     </div>
 
     <th:block th:each="b : ${benefits}">

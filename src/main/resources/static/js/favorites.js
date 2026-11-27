@@ -20,7 +20,7 @@
 
     function render(button, saved) {
         button.setAttribute('aria-pressed', String(saved));
-        button.textContent = saved ? '★ 저장됨' : '☆ 저장';
+        button.querySelector('.fav-label').textContent = saved ? '저장됨' : '저장';
     }
 
     var saved = load();
