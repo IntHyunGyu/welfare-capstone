@@ -45,6 +45,7 @@
         <p class="text" th:if="${detail.llmSummary}" th:text="${detail.llmSummary}"></p>
         <p class="text loading" th:unless="${detail.llmSummary}" aria-live="polite"
            th:attr="data-summary-url=@{/benefits/{id}/summary(id=${benefit.servId})}"><span class="spinner" aria-hidden="true"></span>AI가 쉬운 말로 요약하고 있어요… <span class="hint">잠시만 기다려 주세요</span></p>
+        <p class="note">AI가 만든 요약이라 틀릴 수 있어요. 정확한 조건은 아래 원문을 확인해 주세요.</p>
     </div>
 
     <section class="detail-section" th:if="${detail.sprtTrgtCn}">
