@@ -1,0 +1,27 @@
+# 배포용 프로필. 값은 전부 배포 플랫폼의 환경변수로 넣는다.
+# ADMIN_TOKEN이 빠지면 기동이 실패하고, DB_* 값이 빠지면 DB 연결 단계에서 실패한다.
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    # 예: jdbc:mysql://<host>:3306/<db>?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: false
+  thymeleaf:
+    cache: true
+
+welfare:
+  admin:
+    # /admin/** 호출 시 X-Admin-Token 헤더로 보내야 하는 값
+    token: ${ADMIN_TOKEN}

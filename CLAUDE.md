@@ -23,7 +23,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트**: 현재 `contextLoads` 하나뿐이고 이것도 실제 DB 연결이 필요하다 (테스트용 인메모리 DB 설정 없음).
+- **테스트**: 현재 `contextLoads` 하나뿐. 기본 프로필이 H2라 별도 DB 없이 돈다.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
@@ -207,7 +207,7 @@ public record WelfareItem(
 | 8주 | 중간발표 (프로필 입력 → 혜택 목록 데모) | 데모 가능한 상태 |
 | 9~11주 | LLM 요약 기능 연동 | ✅ 구현 (실키 검증 남음) |
 | 12~13주 | 최근 업데이트 뱃지, 즐겨찾기(localStorage) | ✅ |
-| 14주 | 배포 + 통합 테스트 | ⬜ |
+| 14주 | 배포 + 통합 테스트 | 🔶 배포 준비(Docker/prod 프로필) 완료, 플랫폼 선택·실배포 남음 |
 | 15~16주 | 발표 준비 | ⬜ |
 
 ## 진행 상황 (2026-09-23 기준)
@@ -227,7 +227,7 @@ public record WelfareItem(
 - 나이(age) 필터는 화면 입력은 받지만 매칭 로직에는 미반영 (서비스별 연령 상한/하한이 로컬에 캐싱되어 있지 않음 — 상세조회 연동 시 재검토)
 - 시군구는 드롭다운 계층 없이 자유 텍스트 입력 (MVP 단순화)
 - `resultCode` 실패 케이스 처리 로직 없음 (정상 케이스만 검증됨)
-- `/admin/batch/welfare-list`는 인증 없이 노출됨 (MVP 방침) — 배포 시 quota 낭비 리스크 있음, 발표 자료에 언급 필요
+- `/admin/**`는 `X-Admin-Token` 헤더 검사 (`AdminTokenInterceptor`, 값은 `welfare.admin.token`). 로컬은 토큰이 비어 있어 검사 없이 열려 있고, prod는 `ADMIN_TOKEN` 필수
 - 배포 파이프라인 미착수 (로드맵상 가장 큰 리스크로 지목된 항목)
 
 ## 다음에 할 일
@@ -235,7 +235,7 @@ public record WelfareItem(
 1. ✅ 상세조회 연동 (2026-11-27): `GET /benefits/{servId}` → `WelfareBenefitDetailService.getOrFetch()`가 DB 캐시 우선, 없으면 `WelfareApiService.fetchDetail()` 온디맨드 호출 후 저장. 화면은 `benefit-detail.html`, 공통 스타일은 `static/css/app.css`. ⚠️ 응답 루트 태그 `wantedDtl`은 **추정값** — 실키로 아직 호출 안 해봄, 처음 실키로 열어볼 때 파싱 결과(필드가 비어있지 않은지) 확인 필요
 2. ✅ LLM 요약 (2026-11-27): `LlmSummaryService`가 **공식 Anthropic Java SDK**(`anthropic-java`, 계획했던 RestClient 직접 호출 대신)로 `claude-opus-5-5`(effort low, 거절 시 서버측 fallback 켬) 호출 → `llmSummary`에 캐싱, 상세 화면 "쉽게 말하면" 박스에 표시. 키는 환경변수 `ANTHROPIC_API_KEY` (`llm.api-key`) — 비어 있으면 요약을 건너뛰고 원문만 보여줌, 호출 실패해도 화면은 원문으로 뜨고 다음 조회 때 재시도. ⚠️ 실제 키로 요약 품질 확인은 아직 안 함 (프롬프트는 `LlmSummaryService.SYSTEM_PROMPT`). 첫 조회 시 요약 생성 때문에 몇 초 걸릴 수 있음
 3. ✅ "최근 업데이트" 뱃지, 즐겨찾기 (2026-11-27). 즐겨찾기 화면은 `/favorites` 첫 요청 때 스크립트가 localStorage의 servId를 읽어 `/favorites?ids=...`로 다시 요청하는 방식 (서버는 최대 100개, 저장한 순서의 역순=최신순으로 렌더링). 결과 카드는 `templates/fragments/benefit-card.html` 프래그먼트로 매칭 결과/즐겨찾기 화면이 공유. ⚠️ 뱃지 기준 30일은 실데이터 분포를 안 보고 정한 값 — 실데이터로 대부분 카드에 붙거나 거의 안 붙으면 조정
-4. 배포 파이프라인 확인 (Railway/Render/AWS 프리티어 중 택1) — 리스크 큰 항목이라 우선순위 앞당기는 것도 고려
+4. 배포 — 플랫폼 공통 준비는 완료 (2026-11-27): `Dockerfile`(멀티스테이지, `SPRING_PROFILES_ACTIVE=prod`), `.dockerignore`(로컬 실키 파일 제외), `application-prod.yml`(환경변수 `PORT`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`(MySQL), `ADMIN_TOKEN`, `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`). prod 기동·토큰 검사는 H2로 대신 띄워 확인했고, **Docker 이미지 빌드와 실제 MySQL 연결은 아직 미검증**(이 PC에 Docker 없음). **플랫폼은 Railway로 결정** (GitHub `IntHyunGyu/welfare-capstone` 연결 배포, 루트 `Dockerfile` 자동 인식은 공식 문서로 확인). Railway 앱 서비스 변수: `DB_URL=jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8`, `DB_USERNAME=${{MySQL.MYSQLUSER}}`, `DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}` (MySQL 서비스 이름이 `MySQL`일 때), `PORT=8080`(Railway가 PORT를 주입하는지 문서로 확인 못 해서 명시), `ADMIN_TOKEN`, `WELFARE_API_SERVICE_KEY`, `ANTHROPIC_API_KEY`. 공개 주소는 Settings → Networking → Generate Domain (포트 8080). 남은 것: 계정/MySQL 생성 → 환경변수 등록 → 배포 후 `curl -X POST <주소>/admin/batch/welfare-list -H "X-Admin-Token: <값>"`으로 데이터 1회 적재
 
 ## 발표 시 강조 포인트
 
