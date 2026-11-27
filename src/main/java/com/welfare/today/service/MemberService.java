@@ -1,8 +1,10 @@
 package com.welfare.today.service;
 
 import com.welfare.today.entity.Member;
+import com.welfare.today.repository.MemberProfileRepository;
 import com.welfare.today.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +28,8 @@ public class MemberService implements UserDetailsService {
     private static final int PASSWORD_MAX = 64;
 
     private final MemberRepository memberRepository;
+    private final MemberProfileRepository profileRepository;
+    private final PersistentTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final Set<String> adminUsernames;
 
@@ -33,9 +37,12 @@ public class MemberService implements UserDetailsService {
      * @param adminUsernames 관리자 아이디 목록(콤마 구분, 환경변수 ADMIN_USERNAMES). 관리자 비밀번호를 환경변수에 두지 않도록
      *                       본인이 먼저 가입한 아이디를 적으면 로그인할 때 ADMIN 권한이 붙는다. 목록에서 빼면 다음 로그인부터 해제.
      */
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder,
+    public MemberService(MemberRepository memberRepository, MemberProfileRepository profileRepository,
+                         PersistentTokenRepository tokenRepository, PasswordEncoder passwordEncoder,
                          @Value("${welfare.admin.usernames:}") String adminUsernames) {
         this.memberRepository = memberRepository;
+        this.profileRepository = profileRepository;
+        this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminUsernames = Arrays.stream(adminUsernames.split(","))
                 .map(String::strip)
@@ -75,5 +82,56 @@ public class MemberService implements UserDetailsService {
     @Transactional
     public Member signUp(String username, String password) {
         return memberRepository.save(new Member(username, passwordEncoder.encode(password), Member.Role.USER));
+    }
+
+    @Transactional(readOnly = true)
+    public Member get(String username) {
+        return memberRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    /** 비밀번호 변경 입력 검증. 비어 있으면 변경 가능. */
+    @Transactional(readOnly = true)
+    public List<String> validatePasswordChange(String username, String currentPassword,
+                                               String newPassword, String newPasswordConfirm) {
+        List<String> errors = new ArrayList<>();
+        if (!passwordMatches(username, currentPassword)) {
+            errors.add("현재 비밀번호가 맞지 않아요.");
+            return errors;
+        }
+        if (newPassword == null || newPassword.length() < PASSWORD_MIN || newPassword.length() > PASSWORD_MAX) {
+            errors.add("새 비밀번호는 8~64자여야 해요.");
+        } else if (!newPassword.equals(newPasswordConfirm)) {
+            errors.add("새 비밀번호 확인이 일치하지 않아요.");
+        } else if (newPassword.equals(currentPassword)) {
+            errors.add("지금 쓰는 비밀번호와 다른 비밀번호를 입력해 주세요.");
+        }
+        return errors;
+    }
+
+    /**
+     * 비밀번호를 바꾸고, 이 회원의 "로그인 상태 유지" 토큰을 모두 지운다 —
+     * 비밀번호가 새어 나갔을 수 있는 상황에서 바꾸는 경우가 많아, 다른 기기의 자동 로그인도 끊는다.
+     */
+    @Transactional
+    public void changePassword(String username, String newPassword) {
+        get(username).changePasswordHash(passwordEncoder.encode(newPassword));
+        tokenRepository.removeUserTokens(username);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean passwordMatches(String username, String rawPassword) {
+        return rawPassword != null && memberRepository.findByUsername(username)
+                .map(member -> passwordEncoder.matches(rawPassword, member.getPasswordHash()))
+                .orElse(false);
+    }
+
+    /** 회원 탈퇴: 저장된 조건, 로그인 유지 토큰, 계정을 지운다. (즐겨찾기를 DB에 두게 되면 여기서 함께 지울 것) */
+    @Transactional
+    public void withdraw(String username) {
+        Member member = get(username);
+        profileRepository.deleteById(member.getId());
+        tokenRepository.removeUserTokens(username);
+        memberRepository.delete(member);
     }
 }

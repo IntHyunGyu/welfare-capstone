@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오늘의 복지 - 마이페이지</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
+</head>
+<body>
+<main class="container">
+    <div class="top">
+        <a th:replace="~{fragments/brand :: brand}"></a>
+        <div class="nav-links">
+            <a class="back-link" th:href="@{/match}">← 맞춤 혜택</a>
+            <th:block th:replace="~{fragments/account :: links}"></th:block>
+        </div>
+    </div>
+    <h1>마이페이지</h1>
+    <p class="subtitle" th:text="${member.username} + '님 · ' + ${#temporals.format(member.createdAt, 'yyyy.MM.dd')} + ' 가입'"></p>
+
+    <section class="panel">
+        <h2>저장된 조건</h2>
+        <div class="condition-chips" th:unless="${#lists.isEmpty(conditions)}">
+            <span class="condition" th:each="c : ${conditions}" th:text="${c}"></span>
+        </div>
+        <p class="panel-hint lead" th:if="${#lists.isEmpty(conditions)}">
+            아직 저장된 조건이 없어요. 조건을 저장해 두면 로그인만 해도 바로 맞춤 혜택을 보여드려요.
+        </p>
+        <a class="secondary-btn link-btn" th:href="@{/profile}"
+           th:text="${#lists.isEmpty(conditions)} ? '조건 입력하기' : '조건 변경하기'">조건 변경하기</a>
+    </section>
+
+    <section class="panel">
+        <h2>비밀번호 변경</h2>
+        <div class="form-notice success" th:if="${passwordMessage}" th:text="${passwordMessage}" role="status"></div>
+        <div class="form-notice error" th:if="${passwordErrors}" role="alert">
+            <p th:each="error : ${passwordErrors}" th:text="${error}"></p>
+        </div>
+        <form class="stack-form" th:action="@{/mypage/password}" method="post">
+            <div class="field">
+                <label for="currentPassword">현재 비밀번호</label>
+                <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password" required>
+            </div>
+            <div class="field">
+                <label for="newPassword">새 비밀번호</label>
+                <input type="password" id="newPassword" name="newPassword" autocomplete="new-password"
+                       minlength="8" maxlength="64" required>
+                <p class="field-hint">8자 이상. 바꾸면 다른 기기의 "로그인 상태 유지"는 해제돼요.</p>
+            </div>
+            <div class="field">
+                <label for="newPasswordConfirm">새 비밀번호 확인</label>
+                <input type="password" id="newPasswordConfirm" name="newPasswordConfirm" autocomplete="new-password"
+                       minlength="8" maxlength="64" required>
+            </div>
+            <button class="secondary-btn" type="submit">비밀번호 바꾸기</button>
+        </form>
+    </section>
+
+    <section class="panel danger-zone">
+        <h2>회원 탈퇴</h2>
+        <p class="panel-hint lead">탈퇴하면 계정과 저장된 조건이 바로 지워지고 되돌릴 수 없어요. 탈퇴해도 비회원으로 혜택은 계속 찾아볼 수 있어요.</p>
+        <div class="form-notice error" th:if="${withdrawError}" th:text="${withdrawError}" role="alert"></div>
+        <form class="stack-form" th:action="@{/mypage/withdraw}" method="post"
+              onsubmit="return confirm('정말 탈퇴할까요? 계정과 저장된 조건이 지워지고 되돌릴 수 없어요.');">
+            <div class="field">
+                <label for="withdrawPassword">비밀번호 확인</label>
+                <input type="password" id="withdrawPassword" name="currentPassword" autocomplete="current-password" required>
+            </div>
+            <label class="check">
+                <input type="checkbox" name="agree" required>
+                <span>계정과 저장된 조건이 지워진다는 것을 확인했어요</span>
+            </label>
+            <button class="danger-btn" type="submit">탈퇴하기</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

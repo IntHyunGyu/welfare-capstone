@@ -12,6 +12,11 @@
     <path d="M12 13.2s-3.2-1.9-3.2-4.2c0-1.1.85-1.9 1.85-1.9.62 0 1.08.33 1.35.8.27-.47.73-.8 1.35-.8 1 0 1.85.8 1.85 1.9 0 2.3-3.2 4.2-3.2 4.2Z"
           fill="#FFFFFF"/>
 </svg>
+<svg th:fragment="person" class="icon" viewBox="0 0 24 24" aria-hidden="true"
+     fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8.5" r="3.8"/>
+    <path d="M4.5 20.2c.9-3.7 3.9-5.9 7.5-5.9s6.6 2.2 7.5 5.9"/>
+</svg>
 <th:block th:fragment="favButton(id)">
     <button type="button" class="fav-btn" th:attr="data-fav-id=${id}" aria-pressed="false">
         <svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>

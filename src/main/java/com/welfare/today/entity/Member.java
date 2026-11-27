@@ -66,4 +66,8 @@ public class Member {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 }

@@ -35,8 +35,10 @@ public class ProfileController {
 
     /** 로그인 회원은 계정에 저장된 조건으로, 비회원은 이번 방문 세션의 조건으로 폼을 채운다. */
     @GetMapping
-    public String form(@RequestParam(required = false) String welcome, Authentication authentication,
-                       HttpSession session, Model model) {
+    public String form(@RequestParam(required = false) String welcome,
+                       @RequestParam(required = false) String withdrawn,
+                       Authentication authentication, HttpSession session, Model model) {
+        model.addAttribute("withdrawn", withdrawn != null);
         Optional<String> username = CurrentUser.username(authentication);
         WelfareProfile saved = username.flatMap(memberProfileService::find)
                 .orElse((WelfareProfile) session.getAttribute(SESSION_PROFILE_KEY));

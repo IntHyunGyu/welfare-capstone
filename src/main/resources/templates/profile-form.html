@@ -22,6 +22,9 @@
     <div class="form-notice success" th:if="${welcome}" role="status">
         가입을 환영해요! 조건을 한 번 저장해 두면 다음부터는 로그인만 해도 바로 맞춤 혜택을 보여드려요.
     </div>
+    <div class="form-notice success" th:if="${withdrawn}" role="status">
+        탈퇴가 끝났어요. 계정과 저장된 조건을 모두 지웠어요. 그동안 이용해 주셔서 고마워요.
+    </div>
     <div class="form-notice error" th:if="${formError}" th:text="${formError}" role="alert"></div>
 
     <form th:action="@{/profile}" method="post">
