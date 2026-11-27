@@ -3,7 +3,6 @@ package com.welfare.today.controller;
 import com.welfare.today.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -31,12 +30,12 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginForm(Authentication authentication) {
-        return isLoggedIn(authentication) ? "redirect:/" : "login";
+        return CurrentUser.username(authentication).isPresent() ? "redirect:/" : "login";
     }
 
     @GetMapping("/signup")
     public String signUpForm(Authentication authentication) {
-        return isLoggedIn(authentication) ? "redirect:/" : "signup";
+        return CurrentUser.username(authentication).isPresent() ? "redirect:/" : "signup";
     }
 
     @PostMapping("/signup")
@@ -54,7 +53,10 @@ public class AuthController {
         }
         memberService.signUp(username, password);
         logIn(username, request, response);
-        return "redirect:/";
+        // 가입 전에 고른 조건이 있으면 결과 화면이 그 조건을 계정에 저장해 이어받고, 없으면 조건 입력으로 안내한다.
+        boolean hasChosenConditions = request.getSession(false) != null
+                && request.getSession(false).getAttribute(ProfileController.SESSION_PROFILE_KEY) != null;
+        return hasChosenConditions ? "redirect:/match" : "redirect:/profile?welcome";
     }
 
     /** 가입 직후 바로 로그인 상태로 만든다. 세션 고정 공격을 막으려고 세션 ID를 바꾼 뒤 저장한다. */
@@ -67,9 +69,5 @@ public class AuthController {
             request.changeSessionId();
         }
         securityContextRepository.saveContext(context, request, response);
-    }
-
-    private static boolean isLoggedIn(Authentication authentication) {
-        return authentication != null && !(authentication instanceof AnonymousAuthenticationToken);
     }
 }

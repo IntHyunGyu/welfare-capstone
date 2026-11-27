@@ -176,6 +176,7 @@ section.field-group:last-of-type { border-bottom: none; }
 }
 .submit:hover { background: var(--accent-hover); }
 .submit:active { transform: scale(0.99); }
+.submit-hint { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--ink-sub); }
 
 /* 매칭 결과 */
 .empty {

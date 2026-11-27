@@ -53,8 +53,9 @@ class AuthFlowTest {
 
     @Test
     void signUpStoresHashedPasswordAndLogsIn() throws Exception {
+        // 조건 없이 가입하면 조건 입력 화면으로 안내한다 (3단계)
         HttpSession session = signUp("newuser1", "password123", "password123")
-                .andExpect(redirectedUrl("/"))
+                .andExpect(redirectedUrl("/profile?welcome"))
                 .andReturn().getRequest().getSession(false);
 
         assertThat(memberRepository.findByUsername("newuser1"))

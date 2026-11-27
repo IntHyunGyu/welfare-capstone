@@ -19,6 +19,9 @@
     <h1>내 조건을 알려주세요</h1>
     <p class="subtitle">체크만 하면, 오늘 나에게 해당되는 지자체 복지혜택을 찾아드려요.</p>
 
+    <div class="form-notice success" th:if="${welcome}" role="status">
+        가입을 환영해요! 조건을 한 번 저장해 두면 다음부터는 로그인만 해도 바로 맞춤 혜택을 보여드려요.
+    </div>
     <div class="form-notice error" th:if="${formError}" th:text="${formError}" role="alert"></div>
 
     <form th:action="@{/profile}" method="post">
@@ -89,6 +92,7 @@
 
         <div class="submit-area">
             <button class="submit" type="submit">내 혜택 찾기</button>
+            <p class="submit-hint" th:if="${loggedIn}">이 조건은 내 계정에 저장돼서, 다음에 로그인하면 바로 보여드려요.</p>
         </div>
     </form>
 </main>

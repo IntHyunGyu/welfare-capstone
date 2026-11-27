@@ -23,7 +23,7 @@
     </div>
 
     <div class="conditions" th:unless="${#lists.isEmpty(conditions)}">
-        <span class="conditions-label">찾은 조건</span>
+        <span class="conditions-label" th:text="${savedToAccount} ? '내 저장된 조건' : '찾은 조건'">찾은 조건</span>
         <span class="condition" th:each="c : ${conditions}" th:text="${c}"></span>
         <a class="text-link" th:href="@{/profile}">수정</a>
     </div>
