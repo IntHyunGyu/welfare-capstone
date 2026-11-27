@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 로그인 회원의 저장 버튼이 쓰는 API (favorites.js). 로그인은 SecurityConfig가 /api/** 에 요구하고,
@@ -29,6 +31,12 @@ public class FavoriteApiController {
     @GetMapping
     public List<String> list(Authentication authentication) {
         return favoriteService.servIds(authentication.getName());
+    }
+
+    /** 비회원 때 이 기기에 저장한 servId 목록(오래된 것부터)을 계정으로 옮긴다. */
+    @PostMapping("/import")
+    public Map<String, Integer> importAll(@RequestBody List<String> servIds, Authentication authentication) {
+        return Map.of("imported", favoriteService.importAll(authentication.getName(), servIds));
     }
 
     @PostMapping("/{servId}")

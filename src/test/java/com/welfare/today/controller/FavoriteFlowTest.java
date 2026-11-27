@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +96,33 @@ class FavoriteFlowTest {
         mockMvc.perform(get("/favorites"))
                 .andExpect(content().string(not(containsString("name=\"fav-api\""))))
                 .andExpect(content().string(containsString("data-fav-load")));
+    }
+
+    @Test
+    void importMovesDeviceFavoritesSkippingDuplicatesExistingAndUnknown() throws Exception {
+        String body = "[\"FAV1\", \"NOPE\", \"FAV1\", \" FAV2 \", \"FAV3\"]";
+        mockMvc.perform(post("/api/favorites/import").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/favorites/import").session(session)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+
+        benefitRepository.save(benefit("FAV3", "셋째 혜택"));
+        mockMvc.perform(post("/api/favorites/FAV2").session(session).with(csrf()));
+
+        // FAV1·FAV3 새로 저장, FAV1 중복·FAV2(이미 계정에 있음)·NOPE(없는 혜택)는 건너뜀
+        mockMvc.perform(post("/api/favorites/import").session(session).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.imported").value(2));
+
+        // 기기에서 나중에 저장한 것(FAV3)이 계정에서도 위로 온다
+        mockMvc.perform(get("/api/favorites").session(session))
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0]").value("FAV3"))
+                .andExpect(jsonPath("$[1]").value("FAV1"))
+                .andExpect(jsonPath("$[2]").value("FAV2"));
     }
 
     @Test

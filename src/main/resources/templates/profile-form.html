@@ -101,5 +101,7 @@
 </main>
 <script th:inline="javascript">window.REGIONS = /*[[${regions}]]*/ {};</script>
 <script th:src="@{/js/region.js}"></script>
+<!-- 저장 버튼은 없지만, 로그인 직후 이 화면으로 오는 경우 비회원 즐겨찾기 이전 안내를 띄운다 -->
+<script th:src="@{/js/favorites.js}"></script>
 </body>
 </html>

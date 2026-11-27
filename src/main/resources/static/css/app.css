@@ -69,6 +69,22 @@ button.back-link { font-family: inherit; cursor: pointer; }
 .form-notice.error { background: var(--danger-soft); color: var(--danger); }
 .form-notice.success { background: var(--accent-soft); color: var(--accent); }
 
+/* 비회원 즐겨찾기 → 계정 이전 안내 (favorites.js가 넣는다) */
+.import-notice {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+    background: var(--accent-soft); color: var(--ink-body);
+}
+.import-actions { display: flex; align-items: center; gap: 8px; }
+/* 뒤에 오는 .pill-link의 연한 배경이 같은 색 안내 박스 위에서 안 보이므로, 부모를 붙여 우선순위를 높인다 */
+.import-notice .import-move { border: none; font-family: inherit; cursor: pointer; min-height: 44px; background: var(--accent); color: #fff; }
+.import-notice .import-move:hover { background: var(--accent-hover); }
+.import-notice .import-move:disabled { opacity: 0.6; cursor: default; }
+.text-btn {
+    min-height: 44px; padding: 0 8px; border: none; background: none; font-family: inherit;
+    font-size: 14px; color: var(--ink-sub); cursor: pointer;
+}
+.text-btn:hover { color: var(--accent); text-decoration: underline; }
+
 /* 관리자 */
 .panel { background: var(--card); border-radius: 18px; padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 14px; }
 .panel h2 { font-size: 16px; font-weight: 700; margin: 0 0 14px; }

@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 @Service
 public class FavoriteService {
 
+    /** 한 번에 옮길 수 있는 최대 개수 (비회원 저장 화면의 최대 표시 개수와 같다). */
+    private static final int MAX_IMPORT = 100;
+
     private final FavoriteRepository favoriteRepository;
     private final MemberRepository memberRepository;
     private final WelfareBenefitRepository benefitRepository;
@@ -58,6 +61,33 @@ public class FavoriteService {
             favoriteRepository.save(new Favorite(memberId, servId));
         }
         return true;
+    }
+
+    /**
+     * 비회원일 때 이 기기(localStorage)에 저장해 둔 혜택을 계정으로 옮긴다. 받은 순서(오래된 것부터)대로 저장해
+     * 계정 목록에서도 같은 순서가 유지된다. 이미 계정에 있거나 데이터에서 빠진 혜택은 건너뛴다.
+     *
+     * @return 새로 옮긴 개수
+     */
+    @Transactional
+    public int importAll(String username, List<String> servIds) {
+        Long memberId = memberId(username);
+        List<String> candidates = servIds.stream()
+                .filter(Objects::nonNull)
+                .map(String::strip)
+                .filter(id -> !id.isEmpty())
+                .distinct()
+                .limit(MAX_IMPORT)
+                .toList();
+        int imported = 0;
+        for (String servId : candidates) {
+            if (benefitRepository.existsById(servId)
+                    && !favoriteRepository.existsByMemberIdAndServId(memberId, servId)) {
+                favoriteRepository.save(new Favorite(memberId, servId));
+                imported++;
+            }
+        }
+        return imported;
     }
 
     @Transactional
