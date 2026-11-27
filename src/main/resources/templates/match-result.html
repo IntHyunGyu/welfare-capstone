@@ -8,7 +8,7 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
-<main class="container wide">
+<main class="container">
     <div class="top">
         <div>
             <a th:replace="~{fragments/brand :: brand}"></a>
@@ -27,6 +27,22 @@
         <span class="condition" th:each="c : ${conditions}" th:text="${c}"></span>
         <a class="text-link" th:href="@{/profile}">수정</a>
     </div>
+
+    <section class="since-visit" th:if="${lastVisitAt != null}"
+             th:with="visitDay=${#temporals.format(lastVisitAt, 'M월 d일')}, newCount=${#lists.size(newSinceLastVisit)}">
+        <th:block th:if="${newCount > 0}">
+            <h2>지난 방문(<span th:text="${visitDay}"></span>) 이후 내 조건에 새로 맞는 혜택
+                <strong th:text="${newCount} + '건'"></strong></h2>
+            <ul>
+                <li th:each="b, st : ${newSinceLastVisit}" th:if="${st.index < 10}">
+                    <a th:href="@{/benefits/{id}(id=${b.servId}, from='match')}" th:text="${b.servNm}"></a>
+                </li>
+            </ul>
+            <p class="since-more" th:if="${newCount > 10}" th:text="'외 ' + ${newCount - 10} + '건은 아래 목록에서 볼 수 있어요.'"></p>
+        </th:block>
+        <p class="since-none" th:if="${newCount == 0}"
+           th:text="'지난 방문(' + ${visitDay} + ') 이후 내 조건에 새로 맞는 혜택은 없어요.'"></p>
+    </section>
 
     <div class="empty" th:if="${#lists.isEmpty(benefits)}">
         조건에 맞는 혜택을 찾지 못했어요.<br>조건을 조금 넓혀서 다시 시도해보세요.

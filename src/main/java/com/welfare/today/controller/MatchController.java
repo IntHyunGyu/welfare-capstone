@@ -6,6 +6,7 @@ import com.welfare.today.code.LifeStage;
 import com.welfare.today.dto.WelfareProfile;
 import com.welfare.today.entity.WelfareBenefit;
 import com.welfare.today.service.MemberProfileService;
+import com.welfare.today.service.MemberService;
 import com.welfare.today.service.WelfareMatchService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,10 +29,22 @@ public class MatchController {
 
     private final WelfareMatchService matchService;
     private final MemberProfileService memberProfileService;
+    private final MemberService memberService;
 
-    public MatchController(WelfareMatchService matchService, MemberProfileService memberProfileService) {
+    static final String SESSION_VISIT_KEY = "visitSince";
+
+    /**
+     * 이번 세션의 "지난 방문" 기준 시각. 세션의 첫 결과 화면에서 한 번 정해 두어, 새로고침해도 안내가 사라지지 않게 한다.
+     * 같은 세션에서 다른 아이디로 로그인하는 경우를 구분하려고 아이디를 함께 둔다. since가 null이면 첫 방문.
+     */
+    record VisitSince(String username, LocalDateTime since) implements Serializable {
+    }
+
+    public MatchController(WelfareMatchService matchService, MemberProfileService memberProfileService,
+                           MemberService memberService) {
         this.matchService = matchService;
         this.memberProfileService = memberProfileService;
+        this.memberService = memberService;
     }
 
     /**
@@ -54,7 +69,25 @@ public class MatchController {
         model.addAttribute("profile", profile);
         model.addAttribute("conditions", conditionLabels(profile));
         model.addAttribute("benefits", benefits);
+        username.ifPresent(name -> addSinceLastVisit(name, benefits, session, model));
         return "match-result";
+    }
+
+    /** 지난 방문 이후 처음 들어온(first_seen_at) 혜택 중 내 조건에 맞는 것. 첫 방문이면 아무것도 안 보여준다. */
+    private void addSinceLastVisit(String username, List<WelfareBenefit> benefits, HttpSession session, Model model) {
+        VisitSince visit = (VisitSince) session.getAttribute(SESSION_VISIT_KEY);
+        if (visit == null || !visit.username().equals(username)) {
+            visit = new VisitSince(username, memberService.recordVisit(username));
+            session.setAttribute(SESSION_VISIT_KEY, visit);
+        }
+        if (visit.since() == null) {
+            return;
+        }
+        LocalDateTime since = visit.since();
+        model.addAttribute("lastVisitAt", since);
+        model.addAttribute("newSinceLastVisit", benefits.stream()
+                .filter(b -> b.getFirstSeenAt() != null && b.getFirstSeenAt().isAfter(since))
+                .toList());
     }
 
     /** 결과 화면 상단에 "어떤 조건으로 찾았는지" 보여줄 라벨들 (생애주기 → 가구상황 → 관심주제 → 지역). */

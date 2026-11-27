@@ -37,6 +37,10 @@ public class Member {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    /** 마지막으로 결과 화면을 본 시각 ("지난 방문 이후 새 혜택" 기준). 아직 본 적 없으면 null. */
+    @Column(name = "last_visited_at")
+    private LocalDateTime lastVisitedAt;
+
     protected Member() {
     }
 
@@ -69,5 +73,12 @@ public class Member {
 
     public void changePasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    /** 이번 방문을 기록하고 직전 방문 시각을 돌려준다 (처음이면 null). */
+    public LocalDateTime recordVisit(LocalDateTime now) {
+        LocalDateTime previous = this.lastVisitedAt;
+        this.lastVisitedAt = now;
+        return previous;
     }
 }

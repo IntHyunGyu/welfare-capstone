@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,6 +93,12 @@ public class MemberService implements UserDetailsService {
     public Member get(String username) {
         return memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    /** 이번 방문을 기록하고 직전 방문 시각을 돌려준다 (처음 방문이면 null). */
+    @Transactional
+    public LocalDateTime recordVisit(String username) {
+        return get(username).recordVisit(LocalDateTime.now());
     }
 
     /** 비밀번호 변경 입력 검증. 비어 있으면 변경 가능. */
