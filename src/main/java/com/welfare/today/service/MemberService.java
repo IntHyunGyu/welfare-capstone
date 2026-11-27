@@ -1,6 +1,7 @@
 package com.welfare.today.service;
 
 import com.welfare.today.entity.Member;
+import com.welfare.today.repository.FavoriteRepository;
 import com.welfare.today.repository.MemberProfileRepository;
 import com.welfare.today.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final MemberProfileRepository profileRepository;
+    private final FavoriteRepository favoriteRepository;
     private final PersistentTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final Set<String> adminUsernames;
@@ -38,10 +40,12 @@ public class MemberService implements UserDetailsService {
      *                       본인이 먼저 가입한 아이디를 적으면 로그인할 때 ADMIN 권한이 붙는다. 목록에서 빼면 다음 로그인부터 해제.
      */
     public MemberService(MemberRepository memberRepository, MemberProfileRepository profileRepository,
-                         PersistentTokenRepository tokenRepository, PasswordEncoder passwordEncoder,
+                         FavoriteRepository favoriteRepository, PersistentTokenRepository tokenRepository,
+                         PasswordEncoder passwordEncoder,
                          @Value("${welfare.admin.usernames:}") String adminUsernames) {
         this.memberRepository = memberRepository;
         this.profileRepository = profileRepository;
+        this.favoriteRepository = favoriteRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.adminUsernames = Arrays.stream(adminUsernames.split(","))
@@ -126,10 +130,11 @@ public class MemberService implements UserDetailsService {
                 .orElse(false);
     }
 
-    /** 회원 탈퇴: 저장된 조건, 로그인 유지 토큰, 계정을 지운다. (즐겨찾기를 DB에 두게 되면 여기서 함께 지울 것) */
+    /** 회원 탈퇴: 즐겨찾기, 저장된 조건, 로그인 유지 토큰, 계정을 지운다. */
     @Transactional
     public void withdraw(String username) {
         Member member = get(username);
+        favoriteRepository.deleteByMemberId(member.getId());
         profileRepository.deleteById(member.getId());
         tokenRepository.removeUserTokens(username);
         memberRepository.delete(member);

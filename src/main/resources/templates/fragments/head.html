@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <th:block th:fragment="common">
         <link rel="icon" th:href="@{/favicon.ico}" sizes="any">
@@ -12,6 +12,8 @@
         <!-- 스크립트의 POST(fetch)가 CSRF 검사를 통과하도록 토큰을 헤더로 실어 보낼 때 쓴다 -->
         <meta name="_csrf" th:if="${_csrf}" th:content="${_csrf.token}">
         <meta name="_csrf_header" th:if="${_csrf}" th:content="${_csrf.headerName}">
+        <!-- 로그인 회원이면 저장 버튼이 이 API(DB)를 쓰고, 없으면 브라우저 localStorage를 쓴다 (favorites.js) -->
+        <meta name="fav-api" sec:authorize="isAuthenticated()" th:content="@{/api/favorites}">
     </th:block>
 </head>
 </html>

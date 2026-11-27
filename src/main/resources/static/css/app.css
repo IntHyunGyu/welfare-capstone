@@ -28,6 +28,9 @@ body {
     background: var(--surface);
     margin: 0;
     color: var(--ink);
+    /* 한국어는 어절(띄어쓰기) 단위로만 줄바꿈 — "저/장돼요"처럼 단어 중간에서 끊기지 않게. 긴 영문/ID는 넘치면 끊는다. */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
 }
 
 .container { max-width: 560px; margin: 0 auto; padding: 48px 20px 100px; }

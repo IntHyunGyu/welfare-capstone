@@ -14,7 +14,8 @@
             <a th:replace="~{fragments/brand :: brand}"></a>
             <h1>저장한 혜택</h1>
             <p class="subtitle" th:if="${benefits != null}">
-                <strong th:text="${#lists.size(benefits)}"></strong>건을 저장해 두었어요 · 이 기기에만 저장돼요
+                <strong th:text="${#lists.size(benefits)}"></strong>건을 저장해 두었어요 ·
+                <span th:text="${savedToAccount} ? '내 계정에 저장돼요' : '이 기기에만 저장돼요'">이 기기에만 저장돼요</span>
             </p>
         </div>
         <div class="nav-links">
