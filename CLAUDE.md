@@ -1,7 +1,37 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 이 문서는 새 Claude Code 세션이 이 캡스톤 프로젝트를 이어서 진행할 수 있도록 지금까지의 논의/결정 사항과 진행 상황을 정리한 기획 문서입니다.
 **2026-09-23 기준 진행 상황**: 프로젝트 스캐폴딩부터 프로필 입력→매칭 화면까지 구현 완료, 실제 서비스키로 배치 실행까지 검증 완료. 자세한 내용은 하단 [진행 상황](#진행-상황-2026-09-23-기준) 섹션 참고.
+
+**2026-11-27 추가 결정**: ① 프로필 입력/매칭 결과 화면 UI를 토스 스타일(칩 토글, 카드+그림자)로 리디자인. ② 로컬 개발 머신에 JDK가 8뿐이라 Temurin JDK 17 설치, `JAVA_HOME`을 17로 전환. ③ **로컬 DB를 H2로 확정** — MySQL 구축/연동은 배포 시점으로 미룸 (위 [DB](#개발-명령어) 항목 참고).
+
+## 개발 명령어
+
+Maven Wrapper(`mvnw`)는 없음 — 시스템에 설치된 `mvn`을 직접 사용한다.
+
+```bash
+mvn clean package                                   # 빌드 (+테스트)
+mvn -DskipTests package                             # 테스트 생략 빌드
+mvn spring-boot:run -Dspring-boot.run.profiles=local  # 실키가 든 local 프로필로 실행 (http://localhost:8080 → /profile 리다이렉트)
+mvn test                                            # 전체 테스트
+mvn test -Dtest=TodayWelfareApplicationTests        # 단일 테스트 클래스 (메서드: -Dtest=Class#method)
+curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배치 수동 실행 → DB 적재 (API quota 약 25회 소모)
+```
+
+- **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
+- **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
+- **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
+- **테스트**: 현재 `contextLoads` 하나뿐이고 이것도 실제 DB 연결이 필요하다 (테스트용 인메모리 DB 설정 없음).
+
+## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
+
+패키지 루트: `com.welfare.today` (`controller`/`service`/`repository`/`entity`/`dto` + `code` 코드표 enum, `config` 프로퍼티 바인딩)
+
+1. **수집 경로 (배치, 수동 트리거)**: `BatchAdminController` → `WelfareBenefitBatchService.syncAll()` → `WelfareApiService.fetchList(pageNo)` (XML → `WelfareListResponse` 레코드, `jackson-dataformat-xml`) → `WelfareBenefit` 엔티티로 `saveAll` (servId PK라 재실행 시 upsert). `welfare.api.page-size`/`max-pages`(`WelfareApiProperties`)가 호출 횟수를 제어 — quota 보호용 안전장치이므로 스케줄러 추가 금지 방침.
+2. **조회 경로 (사용자)**: `GET /profile` 폼 → `POST /profile`이 `WelfareProfileForm`(체크박스 바인딩용 가변 POJO)을 불변 `WelfareProfile` 레코드로 바꿔 `HttpSession`에 저장 → `GET /match`가 세션에서 꺼내 `WelfareMatchService.match()` 호출. 세션에 프로필 없으면 `/profile`로 리다이렉트.
+3. **매칭의 코드↔라벨 변환**: 폼/세션은 API **코드값**(`001`, `010`…)을 들고 있지만, DB에는 API 응답의 **한글 이름** 콤마문자열(`lifeNmArray` 등)이 저장되어 있다. 그래서 `LifeStage`/`HouseholdSituation`/`InterestTheme`의 `labelOfCode()`로 라벨 변환 후 `LIKE %라벨%`. 같은 카테고리 내 선택은 OR, 카테고리 간은 AND, 시도/시군구는 equal. 코드표 enum 라벨이 API 응답 표기와 한 글자라도 다르면 매칭이 조용히 0건이 되므로 라벨 수정 시 주의.
 
 ## 프로젝트 개요
 
@@ -166,8 +196,6 @@ public record WelfareItem(
     String lifeNmArray, String trgterIndvdlNmArray, String intrsThemaNmArray
 ) {}
 ```
-
-패키지 구조는 `controller` / `service` / `repository` / `entity` / `dto` 표준 Spring Boot 레이어 구성 (+ 코드표용 `code` 패키지, 설정 바인딩용 `config` 패키지 추가).
 
 ## 16주 로드맵
 

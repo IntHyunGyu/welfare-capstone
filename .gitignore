@@ -34,3 +34,6 @@ target/
 application-local.yml
 application-secret.yml
 *.pem
+
+### 임시 H2 로컬 DB 파일 (MySQL 구축 전까지) ###
+/data/
