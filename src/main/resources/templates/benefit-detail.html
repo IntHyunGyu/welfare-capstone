@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${benefit.servNm} + ' - 오늘의 복지'">오늘의 복지 - 혜택 상세</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <th:block th:replace="~{fragments/head :: icons}"></th:block>
 </head>
 <body>
 <div class="container wide">
     <div class="top">
         <div class="brand">
-            <div class="mark">오</div>
+            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
             <span>오늘의 복지</span>
         </div>
         <div class="nav-links">

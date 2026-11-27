@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>오늘의 복지 - 내 정보 입력</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <th:block th:replace="~{fragments/head :: icons}"></th:block>
 </head>
 <body>
 <div class="container">
     <div class="top">
         <div class="brand">
-            <div class="mark">오</div>
+            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
             <span>오늘의 복지</span>
         </div>
         <a class="back-link" th:href="@{/favorites}">★ 저장한 혜택</a>

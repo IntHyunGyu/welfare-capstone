@@ -27,10 +27,7 @@ body {
 
 /* 공통 헤더 */
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-.brand .mark {
-    width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;
-}
+.brand .mark { display: block; width: 34px; height: 34px; flex-shrink: 0; }
 .brand span { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
 h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
 .subtitle { color: var(--ink-sub); margin: 0 0 32px; font-size: 15px; line-height: 1.5; }
