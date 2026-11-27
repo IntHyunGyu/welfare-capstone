@@ -1,6 +1,9 @@
 package com.welfare.today.code;
 
-/** 관심주제 코드 (intrsThemaArray) */
+/**
+ * 관심주제 코드 (intrsThemaArray). 라벨은 API 응답 intrsThemaNmArray 표기와 글자까지 같아야 매칭된다.
+ * 2026-11 실데이터에는 정신건강/문화·여가/법률로 분류된 지자체 혜택이 없어 단독 선택 시 0건이 정상이다.
+ */
 public enum InterestTheme {
     PHYSICAL_HEALTH("010", "신체건강"),
     MENTAL_HEALTH("020", "정신건강"),

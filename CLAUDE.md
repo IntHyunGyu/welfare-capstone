@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트**: 현재 `contextLoads` 하나뿐. 기본 프로필이 H2라 별도 DB 없이 돈다.
+- **테스트** (19개, H2라 별도 DB 없이 돈다): `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
@@ -163,13 +163,15 @@ WelfareBenefitDetail (상세조회 캐시, servId 1:1 FK)  — ⬜ 엔티티/Rep
 ### 코드표
 
 **생애주기 (lifeArray)** — ✅ `LifeStage` enum으로 구현
-001 영유아, 002 아동, 003 청소년, 004 청년, 005 중장년, 006 노년, 007 임신·출산
+001 영유아, 002 아동, 003 청소년, 004 청년, 005 중장년, 006 노년, 007 임신 · 출산 (**실데이터 표기는 가운뎃점 양옆에 공백** — 관심주제의 임신·출산과 다름)
 
 **가구상황 (trgterIndvdlArray)** — ✅ `HouseholdSituation` enum으로 구현
-010 다문화·탈북민, 020 다자녀, 030 보호대상자, 040 장애인, 050 저소득, 060 한부모·조손
+010 다문화·탈북민, 020 다자녀, 030 보훈대상자 (예전에 "보호대상자"로 잘못 적었다가 실데이터로 정정), 040 장애인, 050 저소득, 060 한부모·조손
 
 **관심주제 (intrsThemaArray)** — ✅ `InterestTheme` enum으로 구현
-010 신체건강, 020 정신건강, 030 생활지원, 040 주거, 050 일자리, 060 문화·여가, 070 안전·위기, 080 임신·출산, 090 보육, 100 교육, 110 입양·위탁, 120 보호·돌봄, 130 서민금융, 140 법률
+010 신체건강, 020 정신건강, 030 생활지원, 040 주거, 050 일자리, 060 문화·여가, 070 안전·위기, 080 임신·출산, 090 보육, 100 교육, 110 입양·위탁, 120 보호·돌봄, 130 서민금융, 140 법률 (2026-11 실데이터에는 정신건강/문화·여가/법률 혜택이 0건 — 단독 선택 시 결과 없음이 정상)
+
+> 실데이터 라벨과 건수는 `GET /admin/labels`(X-Admin-Token 필요)로 확인한다. 코드표 enum 라벨은 `CodeLabelTest`가 실데이터 표기로 고정하고 있으니, 라벨을 바꾸면 이 테스트도 같이 실데이터로 확인해서 고칠 것.
 
 **서비스구분코드 (wlfareInfoDtlCd, 상세조회 부가정보용)**
 010 문의, 020 사이트, 030 근거법령, 040 서식/자료
@@ -209,7 +211,7 @@ public record WelfareItem(
 | 8주 | 중간발표 (프로필 입력 → 혜택 목록 데모) | 데모 가능한 상태 |
 | 9~11주 | LLM 요약 기능 연동 | ✅ 구현 (실키 검증 남음) |
 | 12~13주 | 최근 업데이트 뱃지, 즐겨찾기(localStorage) | ✅ |
-| 14주 | 배포 + 통합 테스트 | 🔶 배포 준비(Docker/prod 프로필) 완료, 플랫폼 선택·실배포 남음 |
+| 14주 | 배포 + 통합 테스트 | ✅ Railway 배포, 테스트 19개 (실데이터 대조로 라벨 버그 2건 발견·수정) |
 | 15~16주 | 발표 준비 | ⬜ |
 
 ## 진행 상황 (2026-09-23 기준)
