@@ -2,6 +2,7 @@ package com.welfare.today.config;
 
 import com.welfare.today.controller.BatchAdminController;
 import com.welfare.today.dto.BatchSyncResult;
+import com.welfare.today.service.MetricService;
 import com.welfare.today.service.WelfareBenefitBatchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ class AdminTokenInterceptorTest {
 
     @MockBean
     private UserDetailsService userDetailsService;
+
+    @MockBean
+    private MetricService metricService;
 
     @Test
     void missingTokenIsRejected() throws Exception {

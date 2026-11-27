@@ -10,11 +10,14 @@ import com.anthropic.models.beta.messages.BetaTextBlock;
 import com.anthropic.models.beta.messages.MessageCreateParams;
 import com.welfare.today.config.LlmProperties;
 import com.welfare.today.entity.WelfareBenefit;
+import com.welfare.today.entity.LlmUsage;
 import com.welfare.today.entity.WelfareBenefitDetail;
+import com.welfare.today.repository.LlmUsageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -43,10 +46,12 @@ public class LlmSummaryService {
             """;
 
     private final LlmProperties properties;
+    private final LlmUsageRepository usageRepository;
     private final AnthropicClient client;
 
-    public LlmSummaryService(LlmProperties properties) {
+    public LlmSummaryService(LlmProperties properties, LlmUsageRepository usageRepository) {
         this.properties = properties;
+        this.usageRepository = usageRepository;
         this.client = properties.enabled()
                 ? AnthropicOkHttpClient.builder().apiKey(properties.apiKey()).build()
                 : null;
@@ -75,6 +80,10 @@ public class LlmSummaryService {
                 response.stopReason().map(BetaStopReason::asString).orElse("-"),
                 response.usage().inputTokens(),
                 response.usage().outputTokens());
+        // 거절된 호출도 토큰은 과금되므로 함께 기록한다.
+        usageRepository.save(new LlmUsage(benefit.getServId(), response.model().asString(),
+                response.usage().inputTokens(), response.usage().outputTokens(),
+                LocalDateTime.now(MetricService.SEOUL)));
         if (response.stopReason().filter(BetaStopReason.REFUSAL::equals).isPresent()) {
             return Optional.empty();
         }

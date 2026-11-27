@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/admin/batch/welfare-list  # 목록조회 배�
 - **로컬 설정**: `src/main/resources/application-local.yml`(gitignore 대상, 저장소에 없음)에 `welfare.api.service-key`(반드시 **디코딩 키** — `RestClient`가 쿼리를 다시 인코딩하므로 인코딩 키는 이중 인코딩되어 인증 실패)를 둔다. 또는 환경변수 `WELFARE_API_SERVICE_KEY`.
 - **DB (2026-11-27 결정)**: 로컬 화면 개발은 **H2 파일 DB**(`./data/welfare`, `pom.xml`에 `h2` 런타임 의존성 포함)를 기본 프로필로 사용 — `mvn spring-boot:run`만으로 로컬 MySQL 없이 기동 가능, `ddl-auto: update`로 스키마 자동 생성. MySQL은 **배포 시점에만** 다시 꺼내 쓸 예정 (`application.yml` 주석에 mysql 설정 예시 남겨둠, `mysql-connector-j` 의존성은 유지 중). `DB_USERNAME`/`DB_PASSWORD`는 그때 가서 설정.
 - **H2 콘솔**: 기동 중 `http://localhost:8080/h2-console`에서 JDBC URL `jdbc:h2:file:./data/welfare`, 유저 `sa`(비밀번호 없음)로 접속해 로컬 데이터 직접 확인 가능.
-- **테스트** (29개, H2라 별도 DB 없이 돈다): `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지/CSRF 규칙), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
+- **테스트** (36개, H2라 별도 DB 없이 돈다): `AuthFlowTest`(`@SpringBootTest` — 가입/로그인/로그인 유지/CSRF 규칙), `ManageAccessTest`(관리자 접근 권한/수집 버튼/페이지 조회 집계), `MetricServiceTest`, `AdminDashboardServiceTest`(일별 집계·추정 비용), `CodeLabelTest`(코드표 라벨 = 실데이터 표기), `WelfareMatchServiceTest`(`@DataJpaTest` — 같은 분류 OR/분류 간 AND/시도 equal/최신순), `RegionTest`(지역 목록, 시군구 선택 시 시도 전체 사업 포함), `WelfareBenefitTest`(최근 업데이트 30일 판정), `AdminTokenInterceptorTest`(`@WebMvcTest` — /admin 토큰 검사), `contextLoads`.
 
 ## 아키텍처 핵심 (여러 파일을 봐야 보이는 흐름)
 
@@ -241,7 +241,7 @@ P2로 미뤄 두었던 회원가입/로그인을 이번에 구현한다. 비회�
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | 1 | **회원가입/로그인**: Spring Security(세션 + BCrypt), 로그인 ID는 **아이디**(이메일 수집 안 함), 로그인 상태 유지(remember-me), 헤더에 로그인 상태. 비회원은 모든 화면 그대로 접근. CSRF: 폼은 Thymeleaf 자동 토큰, 요약 `fetch`는 헤더로 토큰 전달, `/admin/**`(curl, X-Admin-Token)은 CSRF 제외 | ✅ `SecurityConfig`, `Member`(`members` 테이블), `MemberService`, `AuthController`(가입 직후 자동 로그인). prod는 환경변수 `REMEMBER_ME_KEY` 필수 |
-| 2 | **관리자 계정·관리자 페이지**: ADMIN 권한, 데이터 수집(목록조회 배치) 버튼, LLM 토큰 사용량(호출별 기록 → 합계/추정 비용), 트래픽 모니터링(공공데이터 API 일별 호출 수 vs 1,000회 한도, 사이트 요청 수) | ⬜ |
+| 2 | **관리자 계정·관리자 페이지**: ADMIN 권한, 데이터 수집(목록조회 배치) 버튼, LLM 토큰 사용량(호출별 기록 → 합계/추정 비용), 트래픽 모니터링(공공데이터 API 일별 호출 수 vs 1,000회 한도, 사이트 요청 수) | ✅ `/manage`(`ManageController`, `AdminDashboardService`). 관리자는 환경변수 `ADMIN_USERNAMES`(콤마 구분)에 적힌 아이디 — 로그인 시 ADMIN 권한 부여(`MemberService`), 비밀번호를 환경변수에 두지 않음. 기록: `llm_usage`(호출별 토큰), `daily_metric`(api.list/api.detail/page.view, 한국 날짜, `MetricService`가 REQUIRES_NEW로 커밋), 페이지 조회는 `PageViewFilter`(GET, 확장자 없는 경로, /admin·/manage 제외). 추정 비용은 `llm.input/output-price-per-million` 단가로 계산(모델별 단가 구분 없음). JVM 시간대는 Dockerfile에서 Asia/Seoul |
 | 3 | **내 조건 저장**: 회원 계정에 조건(생애주기/가구상황/관심주제/나이/지역) 저장, 로그인하면 조건 입력 없이 바로 맞춤 혜택. 가입 직후 조건 입력으로 안내 | ⬜ |
 | 4 | **마이페이지**: 조건 변경, 비밀번호 변경(현재 비밀번호 확인), 회원 탈퇴(조건·즐겨찾기 함께 삭제) | ⬜ |
 | 5 | **즐겨찾기 DB**: 로그인 시 저장 버튼/즐겨찾기 화면이 DB 기준, 비회원은 localStorage 그대로 | ⬜ |

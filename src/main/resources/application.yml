@@ -32,6 +32,9 @@ welfare:
     # 개발계정 일 1,000회 제한을 고려한 안전장치 - 전체 데이터가 이보다 많으면 여러 날에 나눠 수동 실행한다.
     max-pages: 50
 
+  admin:
+    # 관리자 페이지(/manage)에 들어갈 수 있는 아이디 (콤마 구분). 본인이 먼저 가입한 아이디를 적는다.
+    usernames: ${ADMIN_USERNAMES:}
   security:
     # "로그인 상태 유지" 쿠키 서명 키. 로컬 기본값이 있고 prod는 REMEMBER_ME_KEY가 필수.
     remember-me-key: ${REMEMBER_ME_KEY:local-dev-remember-me-key}
@@ -41,3 +44,6 @@ llm:
   api-key: ${ANTHROPIC_API_KEY:}
   # Haiku 5.5: 100만 토큰당 입력 $0.10 / 출력 $0.50 (opus-5-5의 1/40). 거절 시 서버측 fallback은 지원하지 않는다.
   model: claude-haiku-5-5
+  # 관리자 페이지의 추정 비용 계산용 단가 (100만 토큰당 달러, 프롬프트 10만 토큰 이하 기준). 모델을 바꾸면 같이 바꿀 것.
+  input-price-per-million: 0.10
+  output-price-per-million: 0.50

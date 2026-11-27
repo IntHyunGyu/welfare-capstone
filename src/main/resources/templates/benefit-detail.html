@@ -44,7 +44,7 @@
         <span class="label">쉽게 말하면</span>
         <p class="text" th:if="${detail.llmSummary}" th:text="${detail.llmSummary}"></p>
         <p class="text loading" th:unless="${detail.llmSummary}" aria-live="polite"
-           th:attr="data-summary-url=@{/benefits/{id}/summary(id=${benefit.servId})}"><span class="spinner" aria-hidden="true"></span>AI가 쉬운 말로 요약하고 있어요… <span class="hint">보통 10초 정도 걸려요</span></p>
+           th:attr="data-summary-url=@{/benefits/{id}/summary(id=${benefit.servId})}"><span class="spinner" aria-hidden="true"></span>AI가 쉬운 말로 요약하고 있어요… <span class="hint">잠시만 기다려 주세요</span></p>
     </div>
 
     <section class="detail-section" th:if="${detail.sprtTrgtCn}">

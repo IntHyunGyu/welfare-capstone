@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오늘의 복지 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <th:block th:replace="~{fragments/head :: common}"></th:block>
+</head>
+<body th:with="d=${dashboard}">
+<div class="container wide">
+    <div class="top">
+        <div>
+            <a class="brand" th:href="@{/}">
+                <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
+                <span>오늘의 복지</span>
+            </a>
+            <h1>관리자</h1>
+            <p class="subtitle" th:text="'오늘 ' + ${#temporals.format(d.today.date, 'yyyy.MM.dd (E)')} + ' · 한국 시간 기준'"></p>
+        </div>
+        <div class="nav-links">
+            <a class="back-link" th:href="@{/profile}">← 사이트로</a>
+            <th:block th:replace="~{fragments/account :: links}"></th:block>
+        </div>
+    </div>
+
+    <section class="panel">
+        <h2>복지 데이터 수집</h2>
+        <div class="form-notice success" th:if="${batchMessage}" th:text="${batchMessage}" role="status"></div>
+        <div class="form-notice error" th:if="${batchError}" th:text="${batchError}" role="alert"></div>
+        <dl class="stat-list">
+            <div><dt>저장된 혜택</dt><dd th:text="${#numbers.formatInteger(d.data.benefits, 1, 'COMMA')} + '건'"></dd></div>
+            <div><dt>마지막 수집</dt>
+                <dd th:text="${d.data.lastFetchedAt != null} ? ${#temporals.format(d.data.lastFetchedAt, 'yyyy.MM.dd HH:mm')} : '아직 없음'"></dd></div>
+            <div><dt>상세조회 캐시</dt><dd th:text="${#numbers.formatInteger(d.data.details, 1, 'COMMA')} + '건'"></dd></div>
+            <div><dt>LLM 요약 캐시</dt><dd th:text="${#numbers.formatInteger(d.data.summaries, 1, 'COMMA')} + '건'"></dd></div>
+            <div><dt>회원</dt><dd th:text="${#numbers.formatInteger(d.data.members, 1, 'COMMA')} + '명'"></dd></div>
+        </dl>
+        <form th:action="@{/manage/batch}" method="post"
+              onsubmit="return confirm('목록조회 API를 약 25회 호출해 전체 데이터를 다시 받아요. 1분 정도 걸릴 수 있어요. 진행할까요?');">
+            <button class="submit" type="submit">지금 데이터 수집하기</button>
+        </form>
+        <p class="panel-hint">공공데이터 API를 페이지당 1회씩 호출합니다 (현재 약 25회). 같은 혜택은 덮어쓰고 새 혜택만 추가돼요.</p>
+    </section>
+
+    <section class="panel">
+        <h2>오늘 현황</h2>
+        <div class="tiles">
+            <div class="tile">
+                <span class="tile-label">공공데이터 API 호출</span>
+                <span class="tile-value"><span th:text="${#numbers.formatInteger(d.today.apiCalls, 1, 'COMMA')}"></span>
+                    <small th:text="'/ ' + ${#numbers.formatInteger(d.apiDailyQuota, 1, 'COMMA')} + '회'"></small></span>
+                <span class="meter" role="img" th:attr="aria-label='일 한도의 ' + ${d.today.apiQuotaPercent} + '%'">
+                    <span class="meter-fill" th:classappend="${d.today.apiQuotaPercent >= 80} ? 'warn'"
+                          th:style="'width:' + ${d.today.apiQuotaPercent} + '%'"></span>
+                </span>
+                <span class="tile-sub" th:text="'목록 ' + ${d.today.apiList} + ' · 상세 ' + ${d.today.apiDetail}"></span>
+            </div>
+            <div class="tile">
+                <span class="tile-label">페이지 조회</span>
+                <span class="tile-value" th:text="${#numbers.formatInteger(d.today.pageViews, 1, 'COMMA')}"></span>
+                <span class="tile-sub">정적 파일 제외</span>
+            </div>
+            <div class="tile">
+                <span class="tile-label">LLM 요약</span>
+                <span class="tile-value" th:text="${d.today.llmCalls} + '건'"></span>
+                <span class="tile-sub" th:text="'$' + ${#numbers.formatDecimal(d.today.costUsd, 1, 'COMMA', 4, 'POINT')} + ' (추정)'"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>최근 7일</h2>
+        <div class="table-wrap">
+            <table class="stats">
+                <thead>
+                <tr>
+                    <th scope="col">날짜</th>
+                    <th scope="col">페이지 조회</th>
+                    <th scope="col">API (목록/상세)</th>
+                    <th scope="col">LLM 요약</th>
+                    <th scope="col">토큰 (입력/출력)</th>
+                    <th scope="col">추정 비용</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="day : ${d.recentDays}">
+                    <td th:text="${#temporals.format(day.date, 'MM.dd (E)')}"></td>
+                    <td th:text="${#numbers.formatInteger(day.pageViews, 1, 'COMMA')}"></td>
+                    <td th:text="${day.apiCalls} + ' (' + ${day.apiList} + '/' + ${day.apiDetail} + ')'"></td>
+                    <td th:text="${day.llmCalls}"></td>
+                    <td th:text="${#numbers.formatInteger(day.inputTokens, 1, 'COMMA')} + ' / ' + ${#numbers.formatInteger(day.outputTokens, 1, 'COMMA')}"></td>
+                    <td th:text="'$' + ${#numbers.formatDecimal(day.costUsd, 1, 'COMMA', 4, 'POINT')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>LLM 누적 사용량</h2>
+        <dl class="stat-list">
+            <div><dt>모델</dt><dd th:text="${d.model}"></dd></div>
+            <div><dt>요약 호출</dt><dd th:text="${#numbers.formatInteger(d.llmTotals.calls, 1, 'COMMA')} + '건'"></dd></div>
+            <div><dt>입력 토큰</dt><dd th:text="${#numbers.formatInteger(d.llmTotals.inputTokens, 1, 'COMMA')}"></dd></div>
+            <div><dt>출력 토큰</dt><dd th:text="${#numbers.formatInteger(d.llmTotals.outputTokens, 1, 'COMMA')}"></dd></div>
+            <div><dt>추정 비용</dt><dd th:text="'$' + ${#numbers.formatDecimal(d.llmTotals.costUsd, 1, 'COMMA', 4, 'POINT')}"></dd></div>
+        </dl>
+        <p class="panel-hint">추정 비용은 설정된 단가(<code>llm.input/output-price-per-million</code>)로 계산한 값이라 실제 청구액은 Anthropic 콘솔에서 확인하세요. 이 기록은 관리자 페이지를 배포한 뒤부터 쌓입니다.</p>
+    </section>
+</div>
+</body>
+</html>

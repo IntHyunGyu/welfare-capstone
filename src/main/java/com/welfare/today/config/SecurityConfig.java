@@ -9,7 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * 비회원도 모든 화면을 그대로 쓸 수 있게 전부 permitAll로 두고, 로그인은 회원 전용 기능에만 쓴다.
+ * 비회원도 모든 화면을 그대로 쓸 수 있게 permitAll로 두고, 로그인은 회원 전용 기능에만 쓴다.
+ * 관리자 페이지(/manage)만 ADMIN 권한이 필요하다 (권한은 MemberService가 ADMIN_USERNAMES로 부여).
  * /admin/** 의 curl용 엔드포인트는 세션이 아니라 X-Admin-Token(AdminTokenInterceptor)으로 보호하므로 CSRF에서 뺀다.
  */
 @Configuration
@@ -23,7 +24,9 @@ public class SecurityConfig {
                                                    @Value("${welfare.security.remember-me-key}") String rememberMeKey)
             throws Exception {
         http
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/manage/**").hasRole("ADMIN")
+                        .anyRequest().permitAll())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/", false)

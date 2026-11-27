@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface WelfareBenefitDetailRepository extends JpaRepository<WelfareBenefitDetail, String> {
 
+    long countByLlmSummaryIsNotNull();
+
     @Transactional
     @Modifying
     @Query("update WelfareBenefitDetail d set d.llmSummary = null where d.llmSummary is not null")

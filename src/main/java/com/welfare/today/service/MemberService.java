@@ -2,6 +2,7 @@ package com.welfare.today.service;
 
 import com.welfare.today.entity.Member;
 import com.welfare.today.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class MemberService implements UserDetailsService {
@@ -23,19 +27,32 @@ public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Set<String> adminUsernames;
 
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
+    /**
+     * @param adminUsernames 관리자 아이디 목록(콤마 구분, 환경변수 ADMIN_USERNAMES). 관리자 비밀번호를 환경변수에 두지 않도록
+     *                       본인이 먼저 가입한 아이디를 적으면 로그인할 때 ADMIN 권한이 붙는다. 목록에서 빼면 다음 로그인부터 해제.
+     */
+    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder,
+                         @Value("${welfare.admin.usernames:}") String adminUsernames) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
+        this.adminUsernames = Arrays.stream(adminUsernames.split(","))
+                .map(String::strip)
+                .filter(name -> !name.isEmpty())
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+        String[] roles = adminUsernames.contains(member.getUsername())
+                ? new String[]{Member.Role.USER.name(), Member.Role.ADMIN.name()}
+                : new String[]{Member.Role.USER.name()};
         return User.withUsername(member.getUsername())
                 .password(member.getPasswordHash())
-                .roles(member.getRole().name())
+                .roles(roles)
                 .build();
     }
 

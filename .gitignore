@@ -40,3 +40,7 @@ application-secret.yml
 
 ### oh-my-claudecode 운영 상태 ###
 .omc/
+
+### Claude Code 로컬 설정 / 설치한 스킬 ###
+.claude/
+skills-lock.json

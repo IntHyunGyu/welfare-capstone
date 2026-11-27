@@ -3,6 +3,7 @@ package com.welfare.today.service;
 import com.welfare.today.config.WelfareApiProperties;
 import com.welfare.today.dto.WelfareDetailResponse;
 import com.welfare.today.dto.WelfareListResponse;
+import com.welfare.today.entity.DailyMetric;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -18,13 +19,18 @@ public class WelfareApiService {
 
     private final RestClient restClient;
     private final WelfareApiProperties properties;
+    private final MetricService metricService;
 
-    public WelfareApiService(RestClient.Builder restClientBuilder, WelfareApiProperties properties) {
+    public WelfareApiService(RestClient.Builder restClientBuilder, WelfareApiProperties properties,
+                             MetricService metricService) {
         this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
         this.properties = properties;
+        this.metricService = metricService;
     }
 
+    // 호출이 실패해도 일 1,000회 quota는 소모되므로 호출 전에 센다.
     public WelfareListResponse fetchList(int pageNo) {
+        metricService.increment(DailyMetric.API_LIST);
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/LcgvWelfarelist")
@@ -37,6 +43,7 @@ public class WelfareApiService {
     }
 
     public WelfareDetailResponse fetchDetail(String servId) {
+        metricService.increment(DailyMetric.API_DETAIL);
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/LcgvWelfaredetailed")
