@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<div class="result-card" th:fragment="card(b)">
+<!-- from: 상세 화면의 "돌아가기"가 어디로 갈지 정한다 (match / favorites) -->
+<div class="result-card" th:fragment="card(b, from)">
     <div class="card-head">
         <h2 th:text="${b.servNm}"></h2>
         <th:block th:replace="~{fragments/icons :: favButton(${b.servId})}"></th:block>
@@ -15,8 +16,9 @@
         <span th:if="${b.ctpvNm}" th:text="${b.ctpvNm} + (${b.sggNm} != null ? ' ' + ${b.sggNm} : '')"></span>
     </div>
     <div class="card-footer">
-        <a class="text-link" th:if="${b.servDtlLink}" th:href="${b.servDtlLink}" target="_blank" rel="noopener">복지로 원문</a>
-        <a class="pill-link" th:href="@{/benefits/{id}(id=${b.servId})}">자세히 보기 →</a>
+        <a class="text-link" th:if="${b.servDtlLink}" th:href="${b.servDtlLink}" target="_blank" rel="noopener"
+           aria-label="복지로 원문 (새 창에서 열림)">복지로 원문 <span aria-hidden="true">↗</span></a>
+        <a class="pill-link" th:href="@{/benefits/{id}(id=${b.servId}, from=${from})}">자세히 보기 →</a>
     </div>
 </div>
 </body>

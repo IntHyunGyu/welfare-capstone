@@ -8,12 +8,9 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
-<div class="container">
+<main class="container">
     <div class="top">
-        <div class="brand">
-            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
-            <span>오늘의 복지</span>
-        </div>
+        <a th:replace="~{fragments/brand :: brand}"></a>
         <div class="nav-links">
             <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
             <th:block th:replace="~{fragments/account :: links}"></th:block>
@@ -94,7 +91,7 @@
             <button class="submit" type="submit">내 혜택 찾기</button>
         </div>
     </form>
-</div>
+</main>
 <script th:inline="javascript">window.REGIONS = /*[[${regions}]]*/ {};</script>
 <script th:src="@{/js/region.js}"></script>
 </body>

@@ -8,13 +8,10 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body th:with="d=${dashboard}">
-<div class="container wide">
+<main class="container wide">
     <div class="top">
         <div>
-            <a class="brand" th:href="@{/}">
-                <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
-                <span>오늘의 복지</span>
-            </a>
+            <a th:replace="~{fragments/brand :: brand}"></a>
             <h1>관리자</h1>
             <p class="subtitle" th:text="'오늘 ' + ${#temporals.format(d.today.date, 'yyyy.MM.dd (E)')} + ' · 한국 시간 기준'"></p>
         </div>
@@ -37,7 +34,7 @@
             <div><dt>회원</dt><dd th:text="${#numbers.formatInteger(d.data.members, 1, 'COMMA')} + '명'"></dd></div>
         </dl>
         <form th:action="@{/manage/batch}" method="post"
-              onsubmit="return confirm('목록조회 API를 약 25회 호출해 전체 데이터를 다시 받아요. 1분 정도 걸릴 수 있어요. 진행할까요?');">
+              onsubmit="if (!confirm('목록조회 API를 약 25회 호출해 전체 데이터를 다시 받아요. 1분 정도 걸릴 수 있어요. 진행할까요?')) return false; var b = this.querySelector('button'); b.disabled = true; b.textContent = '수집 중이에요… (약 1분, 창을 닫지 마세요)'; return true;">
             <button class="submit" type="submit">지금 데이터 수집하기</button>
         </form>
         <p class="panel-hint">공공데이터 API를 페이지당 1회씩 호출합니다 (현재 약 25회). 같은 혜택은 덮어쓰고 새 혜택만 추가돼요.</p>
@@ -139,6 +136,6 @@
             </div>
         </div>
     </section>
-</div>
+</main>
 </body>
 </html>

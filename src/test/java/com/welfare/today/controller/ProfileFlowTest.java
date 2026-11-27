@@ -70,6 +70,28 @@ class ProfileFlowTest {
     }
 
     @Test
+    void resultPageShowsChosenConditionsAndEmptyStateAction() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        mockMvc.perform(post("/profile").session(session).with(csrf())
+                .param("lifeCodes", "004")
+                .param("householdCodes", "050")
+                .param("ctpvNm", "서울특별시")
+                .param("sggNm", "송파구"));
+
+        String html = mockMvc.perform(get("/match").session(session))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(html)
+                .contains("<span class=\"condition\">청년</span>")
+                .contains("<span class=\"condition\">저소득</span>")
+                .contains("<span class=\"condition\">서울특별시 송파구</span>")
+                .contains("조건 수정하기")
+                .contains("lang=\"ko\"")
+                .contains("<main");
+    }
+
+    @Test
     void regionAloneIsEnough() throws Exception {
         mockMvc.perform(post("/profile").with(csrf()).param("ctpvNm", "서울특별시"))
                 .andExpect(redirectedUrl("/match"));

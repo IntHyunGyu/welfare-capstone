@@ -8,13 +8,10 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
-<div class="container wide">
+<main class="container wide" data-fav-page>
     <div class="top">
         <div>
-            <div class="brand">
-                <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
-                <span>오늘의 복지</span>
-            </div>
+            <a th:replace="~{fragments/brand :: brand}"></a>
             <h1>저장한 혜택</h1>
             <p class="subtitle" th:if="${benefits != null}">
                 <strong th:text="${#lists.size(benefits)}"></strong>건을 저장해 두었어요 · 이 기기에만 저장돼요
@@ -33,12 +30,13 @@
 
     <div class="empty" th:if="${benefits != null and #lists.isEmpty(benefits)}">
         아직 저장한 혜택이 없어요.<br>혜택 카드의 저장 버튼을 누르면 여기에 모아 볼 수 있어요.
+        <div class="empty-action"><a class="pill-link" th:href="@{/match}">맞춤 혜택 보러 가기</a></div>
     </div>
 
     <th:block th:each="b : ${benefits}">
-        <div th:replace="~{fragments/benefit-card :: card(${b})}"></div>
+        <div th:replace="~{fragments/benefit-card :: card(${b}, 'favorites')}"></div>
     </th:block>
-</div>
+</main>
 <script th:src="@{/js/favorites.js}"></script>
 </body>
 </html>

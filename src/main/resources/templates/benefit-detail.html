@@ -8,15 +8,12 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
-<div class="container wide">
+<main class="container wide">
     <div class="top">
-        <div class="brand">
-            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
-            <span>오늘의 복지</span>
-        </div>
+        <a th:replace="~{fragments/brand :: brand}"></a>
         <div class="nav-links">
             <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
-            <a class="back-link" th:href="@{/match}">← 목록으로</a>
+            <a class="back-link" th:href="@{${backUrl}}" th:text="${backLabel}">← 목록으로</a>
             <th:block th:replace="~{fragments/account :: links}"></th:block>
         </div>
     </div>
@@ -69,9 +66,10 @@
     </section>
 
     <div class="detail-footer" th:if="${benefit.servDtlLink}">
-        <a class="pill-link" th:href="${benefit.servDtlLink}" target="_blank" rel="noopener">복지로에서 원문 보기 →</a>
+        <a class="pill-link" th:href="${benefit.servDtlLink}" target="_blank" rel="noopener"
+           aria-label="복지로에서 원문 보기 (새 창에서 열림)">복지로에서 원문 보기 <span aria-hidden="true">↗</span></a>
     </div>
-</div>
+</main>
 <script th:src="@{/js/favorites.js}"></script>
 <script th:src="@{/js/summary.js}"></script>
 </body>

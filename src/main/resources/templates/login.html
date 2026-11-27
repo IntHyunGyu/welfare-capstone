@@ -8,12 +8,9 @@
     <th:block th:replace="~{fragments/head :: common}"></th:block>
 </head>
 <body>
-<div class="container narrow">
+<main class="container narrow">
     <div class="top">
-        <a class="brand" th:href="@{/}">
-            <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
-            <span>오늘의 복지</span>
-        </a>
+        <a th:replace="~{fragments/brand :: brand}"></a>
     </div>
     <h1>로그인</h1>
     <p class="subtitle">로그인하지 않아도 혜택은 그대로 찾아볼 수 있어요.</p>
@@ -40,6 +37,6 @@
         </div>
     </form>
     <p class="auth-switch">아직 회원이 아니신가요? <a th:href="@{/signup}">회원가입</a></p>
-</div>
+</main>
 </body>
 </html>

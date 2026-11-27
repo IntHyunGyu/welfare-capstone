@@ -24,6 +24,7 @@
     }
 
     var saved = load();
+    var onFavoritesPage = document.querySelector("[data-fav-page]") !== null;
     document.querySelectorAll('[data-fav-id]').forEach(function (button) {
         var id = button.getAttribute('data-fav-id');
         render(button, saved.indexOf(id) !== -1);
@@ -37,6 +38,13 @@
             }
             save(ids);
             render(button, index === -1);
+            // 저장한 혜택 화면에서 해제하면 카드를 바로 없애지 않고 흐리게 둔다 — 다시 누르면 되살아난다(실수 되돌리기).
+            if (onFavoritesPage) {
+                var card = button.closest(".result-card");
+                if (card) {
+                    card.classList.toggle("is-unsaved", index !== -1);
+                }
+            }
         });
     });
 

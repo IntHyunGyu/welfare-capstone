@@ -38,7 +38,7 @@ body {
 .brand .mark { display: block; width: 34px; height: 34px; flex-shrink: 0; }
 .brand span { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
 h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
-.subtitle { color: var(--ink-sub); margin: 0 0 32px; font-size: 15px; line-height: 1.5; }
+.subtitle { color: var(--ink-sub); margin: 0 0 32px; font-size: 16px; line-height: 1.5; }
 .subtitle strong { color: var(--accent); }
 
 .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
@@ -46,7 +46,7 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px
 .back-link {
     flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
     padding: 9px 16px; border-radius: 999px; background: var(--card); border: 1.5px solid var(--line);
-    color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap;
+    color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap;
     transition: border-color 0.12s ease, color 0.12s ease;
 }
 .back-link:hover { border-color: var(--accent); color: var(--accent); }
@@ -54,15 +54,15 @@ h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px
 a.brand { color: inherit; text-decoration: none; }
 button.back-link { font-family: inherit; cursor: pointer; }
 .inline-form { display: inline; margin: 0; }
-.account-name { font-size: 13px; font-weight: 600; color: var(--ink-sub); padding: 0 4px; }
+.account-name { font-size: 14px; font-weight: 600; color: var(--ink-sub); padding: 0 4px; }
 
 /* 로그인 / 회원가입 */
 .container.narrow { max-width: 420px; }
 .auth-card { padding: 22px 24px; }
-.field-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-sub); }
-.check { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 14px; color: var(--ink-body); cursor: pointer; }
+.field-hint { margin: 6px 0 0; font-size: 14px; color: var(--ink-sub); }
+.check { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 15px; color: var(--ink-body); cursor: pointer; }
 .check input { width: 16px; height: 16px; accent-color: var(--accent); }
-.form-notice { border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; font-size: 14px; line-height: 1.5; }
+.form-notice { border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; font-size: 15px; line-height: 1.5; }
 .form-notice p { margin: 0; }
 .form-notice.error { background: var(--danger-soft); color: var(--danger); }
 .form-notice.success { background: var(--accent-soft); color: var(--accent); }
@@ -107,12 +107,12 @@ table.stats tbody tr:first-child td { font-weight: 700; }
 .label-group li { display: flex; justify-content: space-between; gap: 8px; }
 .label-group .count { font-variant-numeric: tabular-nums; color: var(--ink-sub); }
 .empty-note { font-size: 13px; color: var(--ink-sub); margin: 0; }
-.auth-switch { text-align: center; font-size: 14px; color: var(--ink-sub); margin-top: 18px; }
+.auth-switch { text-align: center; font-size: 15px; color: var(--ink-sub); margin-top: 18px; }
 .auth-switch a { color: var(--accent); font-weight: 700; text-decoration: none; }
 .auth-switch a:hover { text-decoration: underline; }
 .field input[type=password] {
     width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
-    font-size: 14px; font-family: inherit; background: var(--surface); color: var(--ink);
+    font-size: 16px; font-family: inherit; background: var(--surface); color: var(--ink);
     transition: border-color 0.12s ease, background 0.12s ease;
 }
 .top .brand { margin-bottom: 14px; }
@@ -127,7 +127,7 @@ table.stats tbody tr:first-child td { font-weight: 700; }
 .fav-btn {
     display: inline-flex; align-items: center; gap: 4px;
     flex-shrink: 0; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--line);
-    background: var(--card); color: var(--ink-sub); font-size: 12.5px; font-weight: 600;
+    background: var(--card); color: var(--ink-sub); font-size: 14px; font-weight: 600;
     font-family: inherit; cursor: pointer; white-space: nowrap;
     transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
@@ -140,8 +140,8 @@ table.stats tbody tr:first-child td { font-weight: 700; }
 .form-card { background: var(--card); border-radius: 20px; padding: 8px 24px 4px; box-shadow: var(--shadow); }
 section.field-group { padding: 22px 0; border-bottom: 1px solid var(--line); }
 section.field-group:last-of-type { border-bottom: none; }
-.field-group h2 { font-size: 15px; font-weight: 700; margin: 0 0 3px; }
-.field-group .hint { font-size: 13px; color: var(--ink-sub); margin: 0 0 14px; }
+.field-group h2 { font-size: 17px; font-weight: 700; margin: 0 0 3px; }
+.field-group .hint { font-size: 14px; color: var(--ink-sub); margin: 0 0 14px; }
 
 .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { position: relative; display: inline-flex; }
@@ -149,7 +149,7 @@ section.field-group:last-of-type { border-bottom: none; }
 .chip .chip-label {
     display: inline-flex; align-items: center; padding: 9px 16px;
     border-radius: 999px; border: 1.5px solid var(--line); background: var(--card);
-    font-size: 14px; color: var(--ink-sub); cursor: pointer; user-select: none;
+    font-size: 15px; color: var(--ink-sub); cursor: pointer; user-select: none;
     transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 .chip .chip-label:hover { border-color: var(--line-strong); }
@@ -160,10 +160,10 @@ section.field-group:last-of-type { border-bottom: none; }
 .field + .field { margin-top: 14px; }
 .row2 .field + .field { margin-top: 0; }
 .row2 + .field { margin-top: 14px; }
-.field label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+.field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
 .field input[type=number], .field input[type=text], .field select {
     width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
-    font-size: 14px; font-family: inherit; background: var(--surface); color: var(--ink);
+    font-size: 16px; font-family: inherit; background: var(--surface); color: var(--ink);
     transition: border-color 0.12s ease, background 0.12s ease;
 }
 .field input:focus, .field select:focus { outline: none; border-color: var(--accent); background: var(--card); }
@@ -180,48 +180,48 @@ section.field-group:last-of-type { border-bottom: none; }
 /* 매칭 결과 */
 .empty {
     background: var(--card); border-radius: 20px; padding: 56px 24px; text-align: center;
-    color: var(--ink-sub); font-size: 15px; line-height: 1.6; box-shadow: var(--shadow);
+    color: var(--ink-sub); font-size: 16px; line-height: 1.6; box-shadow: var(--shadow);
 }
 .result-card {
     background: var(--card); border-radius: 18px; padding: 22px 24px; margin-bottom: 14px;
     box-shadow: var(--shadow); transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .result-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.result-card h2 { font-size: 17px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
-.result-card .dgst { color: var(--ink-body); font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+.result-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+.result-card .dgst { color: var(--ink-body); font-size: 16px; line-height: 1.6; margin: 0 0 14px; }
 
 .meta { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 16px; }
 .meta span {
     background: var(--surface); color: var(--ink-sub); padding: 5px 12px;
-    border-radius: 999px; font-size: 12.5px; font-weight: 500;
+    border-radius: 999px; font-size: 14px; font-weight: 500;
 }
 
 .card-footer { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
 .pill-link {
     display: inline-flex; align-items: center; gap: 4px;
-    color: var(--accent); text-decoration: none; font-size: 13.5px; font-weight: 700;
+    color: var(--accent); text-decoration: none; font-size: 15px; font-weight: 700;
     padding: 8px 14px; border-radius: 999px; background: var(--accent-soft);
     transition: background 0.12s ease;
 }
 .pill-link:hover { background: var(--accent-soft-hover); }
-.text-link { color: var(--ink-sub); font-size: 13px; text-decoration: none; }
+.text-link { color: var(--ink-sub); font-size: 14px; text-decoration: none; }
 .text-link:hover { color: var(--accent); text-decoration: underline; }
 
 /* 상세 */
 .detail-header { background: var(--card); border-radius: 20px; padding: 26px 24px; box-shadow: var(--shadow); margin-bottom: 14px; }
 .detail-header h1 { font-size: 22px; margin-bottom: 10px; }
-.detail-header .dgst { color: var(--ink-body); font-size: 14.5px; line-height: 1.65; margin: 0 0 16px; }
+.detail-header .dgst { color: var(--ink-body); font-size: 16px; line-height: 1.65; margin: 0 0 16px; }
 .detail-header .meta { margin-bottom: 0; }
-.dept { color: var(--ink-sub); font-size: 13px; margin: 0 0 6px; }
+.dept { color: var(--ink-sub); font-size: 14px; margin: 0 0 6px; }
 
 .summary-box {
     background: var(--accent-soft); border-radius: 18px; padding: 20px 22px; margin-bottom: 14px;
-    color: var(--ink-body); font-size: 15px; line-height: 1.7;
+    color: var(--ink-body); font-size: 17px; line-height: 1.7;
 }
-.summary-box .label { display: block; color: var(--accent); font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.summary-box .label { display: block; color: var(--accent); font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 .summary-box .text { margin: 0; white-space: pre-line; }
 .summary-box .text.loading { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; white-space: normal; color: var(--ink-sub); }
-.summary-box .hint { font-size: 13px; }
+.summary-box .hint { font-size: 14px; }
 .spinner {
     width: 16px; height: 16px; flex-shrink: 0; border-radius: 50%;
     border: 2px solid var(--accent-soft-hover); border-top-color: var(--accent-bright);
@@ -230,9 +230,9 @@ section.field-group:last-of-type { border-bottom: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .detail-section { background: var(--card); border-radius: 18px; padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 14px; }
-.detail-section h2 { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
+.detail-section h2 { font-size: 17px; font-weight: 700; margin: 0 0 10px; }
 .detail-section .body {
-    color: var(--ink-body); font-size: 14px; line-height: 1.75; margin: 0;
+    color: var(--ink-body); font-size: 16px; line-height: 1.75; margin: 0;
     white-space: pre-line; overflow-wrap: anywhere;
 }
 
@@ -264,4 +264,19 @@ section.field-group:last-of-type { border-bottom: none; }
 .result-card:hover .pill-link { background: var(--accent-soft-hover); }
 .result-card:has(.pill-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.summary-box .note { margin: 10px 0 0; font-size: 13px; color: var(--ink-sub); line-height: 1.5; }
+.summary-box .note { margin: 10px 0 0; font-size: 14px; color: var(--ink-sub); line-height: 1.5; }
+
+/* 결과 화면: 찾은 조건 요약 */
+.conditions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -12px 0 20px; }
+.conditions-label { font-size: 14px; font-weight: 700; color: var(--ink-sub); margin-right: 2px; }
+.condition { background: var(--accent-soft); color: var(--accent); font-size: 14px; font-weight: 600; padding: 5px 12px; border-radius: 999px; }
+
+/* 빈 화면의 다음 행동 */
+.empty-action { margin-top: 18px; }
+
+/* 저장한 혜택 화면에서 해제한 카드 (다시 누르면 되돌릴 수 있음) */
+.result-card.is-unsaved h2, .result-card.is-unsaved .dgst,
+.result-card.is-unsaved .meta, .result-card.is-unsaved .card-footer { opacity: 0.45; }
+
+/* 관리자 수집 버튼 진행 중 */
+.submit:disabled { background: var(--line-strong); color: var(--ink-sub); cursor: wait; }

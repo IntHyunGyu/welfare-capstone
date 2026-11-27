@@ -3,6 +3,7 @@ package com.welfare.today.controller;
 import com.welfare.today.entity.WelfareBenefit;
 import com.welfare.today.repository.WelfareBenefitRepository;
 import com.welfare.today.service.WelfareBenefitDetailService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,12 +30,32 @@ public class BenefitDetailController {
     }
 
     @GetMapping("/benefits/{servId}")
-    public String detail(@PathVariable String servId, Model model) {
+    public String detail(@PathVariable String servId,
+                         @RequestParam(required = false) String from,
+                         HttpSession session, Model model) {
         WelfareBenefit benefit = findBenefit(servId);
         model.addAttribute("benefit", benefit);
         model.addAttribute("detail", detailService.getOrFetch(benefit));
         model.addAttribute("summaryEnabled", detailService.summaryEnabled());
+        addBackLink(from, session, model);
         return "benefit-detail";
+    }
+
+    /**
+     * 상세에서 돌아갈 곳. 저장한 혜택에서 왔으면 그쪽으로, 세션에 조건이 있으면 매칭 결과로,
+     * 둘 다 아니면(링크를 직접 열었거나 세션 만료) 조건 입력으로 — /match로 보내면 어차피 튕긴다.
+     */
+    private void addBackLink(String from, HttpSession session, Model model) {
+        if ("favorites".equals(from)) {
+            model.addAttribute("backUrl", "/favorites");
+            model.addAttribute("backLabel", "← 저장한 혜택");
+        } else if (session.getAttribute(ProfileController.SESSION_PROFILE_KEY) != null) {
+            model.addAttribute("backUrl", "/match");
+            model.addAttribute("backLabel", "← 목록으로");
+        } else {
+            model.addAttribute("backUrl", "/profile");
+            model.addAttribute("backLabel", "← 조건 입력");
+        }
     }
 
     /**

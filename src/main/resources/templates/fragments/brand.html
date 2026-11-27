@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 모든 화면 공통 로고. 누르면 첫 화면(조건 입력)으로 간다. -->
+<a class="brand" th:fragment="brand" th:href="@{/}">
+    <img class="mark" th:src="@{/icon.svg}" alt="" width="34" height="34">
+    <span>오늘의 복지</span>
+</a>
+</body>
+</html>
