@@ -11,6 +11,8 @@ import com.anthropic.models.beta.messages.MessageCreateParams;
 import com.welfare.today.config.LlmProperties;
 import com.welfare.today.entity.WelfareBenefit;
 import com.welfare.today.entity.WelfareBenefitDetail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class LlmSummaryService {
+
+    private static final Logger log = LoggerFactory.getLogger(LlmSummaryService.class);
 
     private static final String SYSTEM_PROMPT = """
             너는 지자체 복지 안내문을 어르신이나 혼자 사는 분도 한 번에 이해할 수 있는 쉬운 우리말로 바꿔 주는 도우미야.
@@ -63,6 +67,12 @@ public class LlmSummaryService {
                 .build();
 
         BetaMessage response = client.beta().messages().create(params);
+        log.info("LLM 요약 servId={} model={} stop={} input_tokens={} output_tokens={}",
+                benefit.getServId(),
+                response.model().asString(),
+                response.stopReason().map(BetaStopReason::asString).orElse("-"),
+                response.usage().inputTokens(),
+                response.usage().outputTokens());
         if (response.stopReason().filter(BetaStopReason.REFUSAL::equals).isPresent()) {
             return Optional.empty();
         }

@@ -19,19 +19,19 @@ public class WelfareBenefitDetail {
     private String servId;
 
     @Lob
-    @Column(name = "sprt_trgt_cn")
+    @Column(name = "sprt_trgt_cn", length = WelfareBenefit.LONG_TEXT)
     private String sprtTrgtCn;
 
     @Lob
-    @Column(name = "slct_crit_cn")
+    @Column(name = "slct_crit_cn", length = WelfareBenefit.LONG_TEXT)
     private String slctCritCn;
 
     @Lob
-    @Column(name = "alw_serv_cn")
+    @Column(name = "alw_serv_cn", length = WelfareBenefit.LONG_TEXT)
     private String alwServCn;
 
     @Lob
-    @Column(name = "aply_mtd_cn")
+    @Column(name = "aply_mtd_cn", length = WelfareBenefit.LONG_TEXT)
     private String aplyMtdCn;
 
     @Column(name = "enfc_bgng_ymd", length = 8)
@@ -41,7 +41,7 @@ public class WelfareBenefitDetail {
     private String enfcEndYmd;
 
     @Lob
-    @Column(name = "llm_summary")
+    @Column(name = "llm_summary", length = WelfareBenefit.LONG_TEXT)
     private String llmSummary;
 
     protected WelfareBenefitDetail() {

@@ -19,6 +19,8 @@ import java.time.format.DateTimeParseException;
 @Table(name = "welfare_benefit")
 public class WelfareBenefit {
 
+    // @Lob만 쓰면 Hibernate가 MySQL에서 tinytext(255바이트)로 만들어 한글 설명이 잘린다 - mediumtext가 되도록 길이 지정.
+    static final int LONG_TEXT = 16_777_215;
     private static final int RECENT_UPDATE_DAYS = 30;
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
@@ -30,7 +32,7 @@ public class WelfareBenefit {
     private String servNm;
 
     @Lob
-    @Column(name = "serv_dgst")
+    @Column(name = "serv_dgst", length = LONG_TEXT)
     private String servDgst;
 
     @Column(name = "ctpv_nm", length = 50)
