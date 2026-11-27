@@ -35,5 +35,8 @@ application-local.yml
 application-secret.yml
 *.pem
 
-### 임시 H2 로컬 DB 파일 (MySQL 구축 전까지) ###
+### H2 로컬 DB 파일 (로컬 화면 개발용) ###
 /data/
+
+### oh-my-claudecode 운영 상태 ###
+.omc/
