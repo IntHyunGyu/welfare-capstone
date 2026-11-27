@@ -16,8 +16,8 @@
             <p class="subtitle"><strong th:text="${#lists.size(benefits)}"></strong>건의 혜택을 찾았어요</p>
         </div>
         <div class="nav-links">
-            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
-            <a class="back-link" th:href="@{/profile}">← 조건 다시 입력</a>
+            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg><span class="nav-text">저장한 혜택</span></a>
+            <a class="back-link" th:href="@{/profile}">← 조건 수정</a>
             <th:block th:replace="~{fragments/account :: links}"></th:block>
         </div>
     </div>

@@ -12,7 +12,7 @@
     <div class="top">
         <a th:replace="~{fragments/brand :: brand}"></a>
         <div class="nav-links">
-            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg>저장한 혜택</a>
+            <a class="back-link" th:href="@{/favorites}"><svg th:replace="~{fragments/icons :: bookmarkOutline}"></svg><span class="nav-text">저장한 혜택</span></a>
             <a class="back-link" th:href="@{${backUrl}}" th:text="${backLabel}">← 목록으로</a>
             <th:block th:replace="~{fragments/account :: links}"></th:block>
         </div>

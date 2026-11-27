@@ -280,3 +280,13 @@ section.field-group:last-of-type { border-bottom: none; }
 
 /* 관리자 수집 버튼 진행 중 */
 .submit:disabled { background: var(--line-strong); color: var(--ink-sub); cursor: wait; }
+
+/* 모바일: 상단 버튼이 두 줄로 넘어가지 않게 "저장한 혜택"은 아이콘만 (글자는 화면 낭독기용으로 남김) */
+@media (max-width: 560px) {
+    .back-link .nav-text {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .back-link:has(.nav-text) { min-width: 44px; justify-content: center; padding: 9px 12px; }
+    .back-link:has(.nav-text) .icon { margin-right: 0; width: 18px; height: 18px; }
+}
