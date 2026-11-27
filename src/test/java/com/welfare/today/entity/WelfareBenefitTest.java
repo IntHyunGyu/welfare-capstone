@@ -31,6 +31,21 @@ class WelfareBenefitTest {
         assertThat(withLastMod("").isRecentlyUpdated()).isFalse();
     }
 
+    @Test
+    void newForThreeDaysIncludingTheDayItArrived() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        assertThat(firstSeen(now).isNew()).isTrue();
+        assertThat(firstSeen(now.minusDays(2)).isNew()).isTrue();
+        assertThat(firstSeen(now.minusDays(3)).isNew()).isFalse();
+        assertThat(firstSeen(null).isNew()).isFalse();
+    }
+
+    private static WelfareBenefit firstSeen(LocalDateTime firstSeenAt) {
+        WelfareBenefit benefit = withLastMod("20260101");
+        benefit.markFirstSeen(firstSeenAt);
+        return benefit;
+    }
+
     private static String daysAgo(int days) {
         return TODAY.minusDays(days).format(DateTimeFormatter.BASIC_ISO_DATE);
     }

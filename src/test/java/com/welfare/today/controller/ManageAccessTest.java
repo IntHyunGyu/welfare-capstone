@@ -101,13 +101,13 @@ class ManageAccessTest {
 
     @Test
     void collectButtonRunsBatchAndReportsResult() throws Exception {
-        when(batchService.syncAll()).thenReturn(new BatchSyncResult(4818, 4818, 25, false,
-                LocalDateTime.now()));
+        when(batchService.syncAll()).thenReturn(new BatchSyncResult(4837, 4837, 25, false,
+                LocalDateTime.now(), 19));
         MockHttpSession session = logIn("boss_admin");
 
         mockMvc.perform(post("/manage/batch").session(session).with(csrf()))
                 .andExpect(redirectedUrl("/manage"))
-                .andExpect(flash().attribute("batchMessage", "수집 완료: 4,818건 (API 호출 25회)"));
+                .andExpect(flash().attribute("batchMessage", "수집 완료: 4,837건 (새 혜택 19건, API 호출 25회)"));
         verify(batchService).syncAll();
     }
 

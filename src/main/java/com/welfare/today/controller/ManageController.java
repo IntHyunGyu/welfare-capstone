@@ -52,8 +52,8 @@ public class ManageController {
     public String runBatch(RedirectAttributes redirect) {
         try {
             BatchSyncResult result = batchService.syncAll();
-            redirect.addFlashAttribute("batchMessage", String.format(Locale.KOREA, "수집 완료: %,d건 (API 호출 %d회)%s",
-                    result.fetchedCount(), result.pageCount(),
+            redirect.addFlashAttribute("batchMessage", String.format(Locale.KOREA, "수집 완료: %,d건 (새 혜택 %,d건, API 호출 %d회)%s",
+                    result.fetchedCount(), result.newCount(), result.pageCount(),
                     result.truncatedByMaxPages() ? " — 최대 페이지 수에 걸려 일부만 받았어요" : ""));
         } catch (RuntimeException e) {
             log.error("관리자 페이지에서 실행한 목록조회 배치 실패", e);

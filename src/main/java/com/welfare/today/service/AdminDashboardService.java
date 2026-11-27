@@ -3,6 +3,7 @@ package com.welfare.today.service;
 import com.welfare.today.config.LlmProperties;
 import com.welfare.today.entity.DailyMetric;
 import com.welfare.today.entity.LlmUsage;
+import com.welfare.today.entity.WelfareBenefit;
 import com.welfare.today.repository.DailyMetricRepository;
 import com.welfare.today.repository.LlmUsageRepository;
 import com.welfare.today.repository.MemberRepository;
@@ -57,7 +58,8 @@ public class AdminDashboardService {
     public record LlmTotals(long calls, long inputTokens, long outputTokens, double costUsd) {
     }
 
-    public record DataStatus(long benefits, LocalDateTime lastFetchedAt, long details, long summaries, long members) {
+    public record DataStatus(long benefits, long newBenefits, LocalDateTime lastFetchedAt, long details, long summaries,
+                             long members) {
     }
 
     public record Dashboard(DayStats today, List<DayStats> recentDays, LlmTotals llmTotals, DataStatus data,
@@ -89,7 +91,9 @@ public class AdminDashboardService {
         LlmTotals llmTotals = new LlmTotals(((Number) totals[0]).longValue(), totalIn, totalOut,
                 llmProperties.costUsd(totalIn, totalOut));
 
-        DataStatus data = new DataStatus(benefitRepository.count(), benefitRepository.findLastFetchedAt(),
+        long newBenefits = benefitRepository.countByFirstSeenAtGreaterThanEqual(
+                today.minusDays(WelfareBenefit.NEW_DAYS - 1).atStartOfDay());
+        DataStatus data = new DataStatus(benefitRepository.count(), newBenefits, benefitRepository.findLastFetchedAt(),
                 detailRepository.count(), detailRepository.countByLlmSummaryIsNotNull(), memberRepository.count());
 
         return new Dashboard(recentDays.get(0), recentDays, llmTotals, data, llmProperties.model(), API_DAILY_QUOTA);

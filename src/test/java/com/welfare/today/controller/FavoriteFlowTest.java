@@ -1,7 +1,9 @@
 package com.welfare.today.controller;
 
 import com.welfare.today.entity.WelfareBenefit;
+import com.welfare.today.entity.WelfareBenefitDetail;
 import com.welfare.today.repository.FavoriteRepository;
+import com.welfare.today.repository.WelfareBenefitDetailRepository;
 import com.welfare.today.repository.WelfareBenefitRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,9 @@ class FavoriteFlowTest {
 
     @Autowired
     private FavoriteRepository favoriteRepository;
+
+    @Autowired
+    private WelfareBenefitDetailRepository detailRepository;
 
     private MockHttpSession session;
 
@@ -96,6 +101,25 @@ class FavoriteFlowTest {
         mockMvc.perform(get("/favorites"))
                 .andExpect(content().string(not(containsString("name=\"fav-api\""))))
                 .andExpect(content().string(containsString("data-fav-load")));
+    }
+
+    @Test
+    void newBadgeShowsOnlyForRecentlyArrivedBenefits() throws Exception {
+        WelfareBenefit fresh = benefit("FAV3", "새로 들어온 혜택");
+        fresh.markFirstSeen(LocalDateTime.now());
+        benefitRepository.save(fresh);
+        // 상세 화면이 실제 공공데이터 API를 부르지 않도록 상세 캐시를 미리 넣는다
+        detailRepository.save(new WelfareBenefitDetail("FAV3", "대상", "기준", "내용", "방법", null, null, null));
+        mockMvc.perform(post("/api/favorites/FAV1").session(session).with(csrf()));
+        mockMvc.perform(post("/api/favorites/FAV3").session(session).with(csrf()));
+
+        String html = mockMvc.perform(get("/favorites").session(session))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(html.split("class=\"new-badge\"", -1)).hasSize(2);
+        assertThat(html.indexOf("class=\"new-badge\"")).isLessThan(html.indexOf("새로 들어온 혜택"));
+
+        mockMvc.perform(get("/benefits/FAV3"))
+                .andExpect(content().string(containsString("class=\"new-badge\"")));
     }
 
     @Test

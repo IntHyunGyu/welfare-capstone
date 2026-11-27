@@ -27,6 +27,7 @@
         <div class="form-notice error" th:if="${batchError}" th:text="${batchError}" role="alert"></div>
         <dl class="stat-list">
             <div><dt>저장된 혜택</dt><dd th:text="${#numbers.formatInteger(d.data.benefits, 1, 'COMMA')} + '건'"></dd></div>
+            <div><dt>NEW 혜택 (최근 3일)</dt><dd th:text="${#numbers.formatInteger(d.data.newBenefits, 1, 'COMMA')} + '건'"></dd></div>
             <div><dt>마지막 수집</dt>
                 <dd th:text="${d.data.lastFetchedAt != null} ? ${#temporals.format(d.data.lastFetchedAt, 'yyyy.MM.dd HH:mm')} : '아직 없음'"></dd></div>
             <div><dt>상세조회 캐시</dt><dd th:text="${#numbers.formatInteger(d.data.details, 1, 'COMMA')} + '건'"></dd></div>

@@ -14,6 +14,8 @@ public interface WelfareBenefitRepository extends JpaRepository<WelfareBenefit, 
     @Query("select max(b.fetchedAt) from WelfareBenefit b")
     LocalDateTime findLastFetchedAt();
 
+    long countByFirstSeenAtGreaterThanEqual(LocalDateTime from);
+
     @Query("select distinct b.ctpvNm as ctpvNm, b.sggNm as sggNm from WelfareBenefit b where b.ctpvNm is not null")
     List<RegionRow> findDistinctRegions();
 

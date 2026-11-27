@@ -153,6 +153,12 @@ table.stats tbody tr:first-child td { font-weight: 700; }
 .fav-btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .fav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .meta .badge-new { background: var(--sun-soft); color: var(--sun-ink); font-weight: 700; }
+/* NEW: 최근 3일 안에 새로 들어온 혜택 (제목 앞) */
+.new-badge {
+    display: inline-block; margin-right: 6px; padding: 2px 7px; border-radius: 6px;
+    background: var(--accent); color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em;
+    line-height: 1.5; vertical-align: 0.15em;
+}
 
 /* 프로필 입력 폼 */
 .form-card { background: var(--card); border-radius: 20px; padding: 8px 24px 4px; box-shadow: var(--shadow); }

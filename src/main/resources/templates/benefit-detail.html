@@ -21,7 +21,7 @@
     <div class="detail-header">
         <p class="dept" th:if="${benefit.bizChrDeptNm}" th:text="${benefit.bizChrDeptNm}"></p>
         <div class="card-head">
-            <h1 th:text="${benefit.servNm}"></h1>
+            <h1><span class="new-badge" th:if="${benefit.isNew()}" title="최근 3일 안에 새로 들어온 혜택">NEW</span><span th:text="${benefit.servNm}"></span></h1>
             <th:block th:replace="~{fragments/icons :: favButton(${benefit.servId})}"></th:block>
         </div>
         <p class="dgst" th:if="${benefit.servDgst}" th:text="${benefit.servDgst}"></p>

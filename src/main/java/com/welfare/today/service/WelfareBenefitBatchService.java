@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 목록조회 API를 페이지 단위로 반복 호출해 전체(또는 상한까지) 데이터를
@@ -40,9 +42,12 @@ public class WelfareBenefitBatchService {
     @Transactional
     public BatchSyncResult syncAll() {
         LocalDateTime fetchedAt = LocalDateTime.now();
+        // 빈 DB를 처음 채우는 수집은 "새로 생긴 혜택"이 아니므로 NEW(first_seen_at)를 기록하지 않는다.
+        boolean initialLoad = repository.count() == 0;
         int pageNo = 1;
         int totalCount = Integer.MAX_VALUE;
         int fetchedCount = 0;
+        int newCount = 0;
         boolean truncated = false;
 
         while ((pageNo - 1) * properties.pageSize() < totalCount) {
@@ -72,15 +77,38 @@ public class WelfareBenefitBatchService {
             List<WelfareBenefit> entities = items.stream()
                     .map(item -> toEntity(item, fetchedAt))
                     .toList();
+            newCount += carryOverFirstSeen(entities, fetchedAt, initialLoad);
             repository.saveAll(entities);
             fetchedCount += entities.size();
 
             pageNo++;
         }
 
-        log.info("welfare list 배치 수집 완료: fetchedCount={}, totalCount={}, truncated={}",
-                fetchedCount, totalCount, truncated);
-        return new BatchSyncResult(fetchedCount, totalCount, pageNo - 1, truncated, fetchedAt);
+        log.info("welfare list 배치 수집 완료: fetchedCount={}, newCount={}, totalCount={}, truncated={}, initialLoad={}",
+                fetchedCount, newCount, totalCount, truncated, initialLoad);
+        return new BatchSyncResult(fetchedCount, totalCount, pageNo - 1, truncated, fetchedAt, newCount);
+    }
+
+    /**
+     * 이미 있던 혜택은 처음 들어온 시각을 그대로 이어받고, 처음 보는 혜택에만 이번 수집 시각을 기록한다.
+     * (saveAll은 행 전체를 덮어쓰므로 기존 값을 옮겨 두지 않으면 지워진다.)
+     *
+     * @return NEW로 표시될 새 혜택 수 (빈 DB를 처음 채우는 수집이면 0)
+     */
+    private int carryOverFirstSeen(List<WelfareBenefit> entities, LocalDateTime fetchedAt, boolean initialLoad) {
+        Map<String, LocalDateTime> existing = new HashMap<>();
+        repository.findAllById(entities.stream().map(WelfareBenefit::getServId).toList())
+                .forEach(saved -> existing.put(saved.getServId(), saved.getFirstSeenAt()));
+        int newCount = 0;
+        for (WelfareBenefit entity : entities) {
+            if (existing.containsKey(entity.getServId())) {
+                entity.markFirstSeen(existing.get(entity.getServId()));
+            } else if (!initialLoad) {
+                entity.markFirstSeen(fetchedAt);
+                newCount++;
+            }
+        }
+        return newCount;
     }
 
     private WelfareBenefit toEntity(WelfareItem item, LocalDateTime fetchedAt) {

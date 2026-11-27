@@ -22,6 +22,7 @@ public class WelfareBenefit {
     // @Lob만 쓰면 Hibernate가 MySQL에서 tinytext(255바이트)로 만들어 한글 설명이 잘린다 - mediumtext가 되도록 길이 지정.
     static final int LONG_TEXT = 16_777_215;
     private static final int RECENT_UPDATE_DAYS = 30;
+    public static final int NEW_DAYS = 3;
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
     @Id
@@ -70,6 +71,13 @@ public class WelfareBenefit {
 
     @Column(name = "fetched_at", nullable = false)
     private LocalDateTime fetchedAt;
+
+    /**
+     * 우리 DB에 처음 들어온 시각 (NEW 표시용). 배치가 처음 본 혜택에만 기록하고 이후 수집에서도 유지한다.
+     * 이 컬럼이 생기기 전부터 있던 혜택과, 빈 DB를 처음 채운 수집분은 언제 생긴 건지 몰라 비워 둔다(= NEW 아님).
+     */
+    @Column(name = "first_seen_at")
+    private LocalDateTime firstSeenAt;
 
     protected WelfareBenefit() {
     }
@@ -153,6 +161,20 @@ public class WelfareBenefit {
 
     public LocalDateTime getFetchedAt() {
         return fetchedAt;
+    }
+
+    public LocalDateTime getFirstSeenAt() {
+        return firstSeenAt;
+    }
+
+    public void markFirstSeen(LocalDateTime firstSeenAt) {
+        this.firstSeenAt = firstSeenAt;
+    }
+
+    /** 처음 들어온 날을 포함해 3일간(오늘, 어제, 그제 들어온 혜택) NEW. */
+    public boolean isNew() {
+        return firstSeenAt != null
+                && !firstSeenAt.toLocalDate().isBefore(LocalDate.now(SEOUL).minusDays(NEW_DAYS - 1));
     }
 
     public boolean isRecentlyUpdated() {
